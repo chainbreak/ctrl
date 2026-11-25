@@ -1,0 +1,30 @@
+{
+  "name": "ctrl-ton",
+  "version": "1.0.0",
+  "description": "Ctrl TAP, NFT registrar and TON Connect authentication",
+  "scripts": {
+    "build": "node scripts/build.cjs",
+    "test": "npm run build && node --test tests/*.test.cjs tests/*.test.mjs",
+    "auth": "node --env-file=.env backend/server.mjs"
+  },
+  "type": "commonjs",
+  "dependencies": {
+    "@ton/core": "0.63.1",
+    "@ton/crypto": "3.3.0",
+    "@ton/ton": "16.3.0",
+    "@tonconnect/ui": "5.0.4",
+    "jose": "6.2.18"
+  },
+  "devDependencies": {
+    "@ton-community/func-js": "0.11.0",
+    "@ton/blueprint": "0.47.1",
+    "@ton/sandbox": "0.45.0",
+    "@types/node": "24.19.2",
+    "ts-node": "10.9.2",
+    "typescript": "5.9.3"
+  },
+  "private": true,
+  "engines": {
+    "node": ">=24"
+  }
+}

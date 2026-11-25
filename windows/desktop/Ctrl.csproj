@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+<PropertyGroup>
+<OutputType>WinExe</OutputType><TargetFramework>net8.0-windows</TargetFramework><Nullable>enable</Nullable><UseWindowsForms>true</UseWindowsForms><ImplicitUsings>enable</ImplicitUsings>
+<AssemblyName>ctrl</AssemblyName><Product>ctrl</Product><Title>ctrl</Title><Version>0.1.2</Version><ApplicationIcon>ctrl.ico</ApplicationIcon>
+<PublishSingleFile>true</PublishSingleFile><SelfContained>true</SelfContained><IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract><EnableCompressionInSingleFile>true</EnableCompressionInSingleFile><DebugType>none</DebugType><RuntimeIdentifier>win-x64</RuntimeIdentifier>
+</PropertyGroup>
+<ItemGroup><PackageReference Include="Microsoft.Data.Sqlite.Core" Version="8.0.22" /><PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4314.35" />
+<EmbeddedResource Include="ctrl.ico" LogicalName="Ctrl.AppIcon" />
+<PackageReference Include="SQLitePCLRaw.bundle_e_sqlcipher" Version="2.1.11" /><PackageReference Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" /></ItemGroup><Target Name="RemoveUnusedWpfReference" BeforeTargets="ResolveAssemblyReferences"><ItemGroup><Reference Remove="@(Reference)" Condition="'%(Reference.Filename)' == 'Microsoft.Web.WebView2.Wpf'" /></ItemGroup></Target><ItemGroup><EmbeddedResource Include="../publish-server/ctrl-server.exe" LogicalName="Ctrl.Server" /></ItemGroup><ItemGroup>
+  
+  
+  
+  
+</ItemGroup>
+<ItemGroup><EmbeddedResource Include="../staging/interface.zip" LogicalName="Ctrl.Site" /></ItemGroup></Project>

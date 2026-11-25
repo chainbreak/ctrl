@@ -1,0 +1,33 @@
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+**/ctrl-ton.json
+**/*.db
+**/*.db-*
+**/*.sqlite
+**/*.sqlite-*
+**/*.key
+**/*.pem
+**/*.pfx
+**/*.p12
+**/*.keystore
+**/*.jks
+**/data/
+
+# Dependencies and generated build output
+**/node_modules/
+**/bin/
+**/obj/
+**/publish-*/
+**/staging/
+**/build/
+
+# Release binaries are uploaded as GitHub Release assets, not Git files
+*.exe
+*.msi
+*.apk
+*.aab
+*.zip
+*.tar.gz
+/релизы/

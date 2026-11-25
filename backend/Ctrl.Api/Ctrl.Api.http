@@ -1,0 +1,155 @@
+@baseUrl = http://localhost:5092
+@userId = replace-with-user-id
+@adminEmail = replace-with-admin-email
+@csrfToken = {{csrf.response.body.$.requestToken}}
+@csrfAfterLoginToken = {{csrfAfterLogin.response.body.$.requestToken}}
+@csrfAfterMfaToken = {{csrfAfterMfa.response.body.$.requestToken}}
+
+### Get public USD and EUR reference rates quoted in RUB
+GET {{baseUrl}}/api/exchange-rates
+Accept: application/json
+
+### Get a CSRF token before sending requests that change state
+# @name csrf
+GET {{baseUrl}}/api/auth/csrf
+
+### Sign in with email and password
+POST {{baseUrl}}/api/auth/login
+X-CSRF-TOKEN: {{csrfToken}}
+Content-Type: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "password": "replace-locally-do-not-commit"
+}
+
+### Refresh the CSRF token after the password sign-in changes the identity
+# @name csrfAfterLogin
+GET {{baseUrl}}/api/auth/csrf
+
+### Complete sign-in with an authenticator code when prompted
+POST {{baseUrl}}/api/auth/login/two-factor
+X-CSRF-TOKEN: {{csrfAfterLoginToken}}
+Content-Type: application/json
+
+{
+  "code": "000000"
+}
+
+### Complete sign-in with a one-time recovery code instead
+POST {{baseUrl}}/api/auth/login/recovery-code
+X-CSRF-TOKEN: {{csrfAfterLoginToken}}
+Content-Type: application/json
+
+{
+  "code": "replace-with-unused-recovery-code"
+}
+
+### Refresh the CSRF token after completing sign-in
+# @name csrfAfterMfa
+GET {{baseUrl}}/api/auth/csrf
+
+### Get the signed-in account
+GET {{baseUrl}}/api/auth/me
+
+### Start MFA enrollment; treat the response as a secret
+POST {{baseUrl}}/api/auth/two-factor/setup
+X-CSRF-TOKEN: {{csrfAfterMfaToken}}
+
+### Confirm MFA enrollment and save the returned recovery codes securely
+POST {{baseUrl}}/api/auth/two-factor/enable
+X-CSRF-TOKEN: {{csrfAfterMfaToken}}
+Content-Type: application/json
+
+{
+  "code": "000000"
+}
+
+### Search users (minimum two characters)
+GET {{baseUrl}}/api/admin/users?q=sample
+
+### Ban a user indefinitely
+POST {{baseUrl}}/api/admin/users/{{userId}}/ban
+X-CSRF-TOKEN: {{csrfAfterMfaToken}}
+Content-Type: application/json
+
+{
+  "reason": "Documented moderation reason"
+}
+
+### Ban a user for a limited duration
+POST {{baseUrl}}/api/admin/users/{{userId}}/ban
+X-CSRF-TOKEN: {{csrfAfterMfaToken}}
+Content-Type: application/json
+
+{
+  "reason": "Documented moderation reason",
+  "durationHours": 24
+}
+
+### Unban a user
+DELETE {{baseUrl}}/api/admin/users/{{userId}}/ban
+X-CSRF-TOKEN: {{csrfAfterMfaToken}}
+Content-Type: application/json
+
+{
+  "reason": "Reviewed appeal"
+}
+
+### Adjust a user's clicks (use a new operationId for each operation)
+POST {{baseUrl}}/api/admin/users/{{userId}}/clicks
+X-CSRF-TOKEN: {{csrfAfterMfaToken}}
+Content-Type: application/json
+
+{
+  "amountDelta": 100,
+  "reason": "Approved beta compensation",
+  "operationId": "11111111-1111-4111-8111-111111111111"
+}
+
+### Get the signed-in user's gift catalog and Clicks balance
+GET {{baseUrl}}/api/gifts
+
+### Purchase the first gift; each successful request deducts 50 Clicks
+POST {{baseUrl}}/api/gifts/purchase
+X-CSRF-TOKEN: {{csrfAfterMfaToken}}
+Content-Type: application/json
+
+{
+  "giftId": "first-gift",
+  "operationId": "22222222-2222-4222-8222-222222222222"
+}
+
+### Purchase the second gift
+POST {{baseUrl}}/api/gifts/purchase
+X-CSRF-TOKEN: {{csrfAfterMfaToken}}
+Content-Type: application/json
+
+{
+  "giftId": "webm-gift-1",
+  "operationId": "44444444-4444-4444-8444-444444444444"
+}
+
+### Purchase the third gift
+POST {{baseUrl}}/api/gifts/purchase
+X-CSRF-TOKEN: {{csrfAfterMfaToken}}
+Content-Type: application/json
+
+{
+  "giftId": "webm-gift-2",
+  "operationId": "55555555-5555-4555-8555-555555555555"
+}
+
+### Unknown gifts are rejected
+POST {{baseUrl}}/api/gifts/purchase
+X-CSRF-TOKEN: {{csrfAfterMfaToken}}
+Content-Type: application/json
+
+{
+  "giftId": "unknown-gift",
+  "operationId": "33333333-3333-4333-8333-333333333333"
+}
+
+### Sign out
+POST {{baseUrl}}/api/auth/logout
+X-CSRF-TOKEN: {{csrfAfterMfaToken}}

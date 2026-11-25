@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>CTRL — администрирование</title>
+  <link rel="stylesheet" href="/admin.css">
+  <script src="/admin.js" defer></script><script src="/messenger.js" defer></script>
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="/" aria-label="CTRL Admin">CTRL <span>ADMIN</span></a>
+    <button id="logout" class="button secondary" type="button" hidden>Выйти</button>
+  </header>
+  <main>
+    <section id="notice" class="notice" role="status" hidden></section>
+    <section id="auth" class="panel auth-panel">
+      <h1 id="auth-title">Вход администратора</h1>
+      <p class="muted">Войдите с рабочим аккаунтом и подтвердите вход в приложении-аутентификаторе.</p>
+      <form id="login-form" class="stack">
+        <label>E-mail<input name="email" type="email" autocomplete="username" required maxlength="256"></label>
+        <label>Пароль<input name="password" type="password" autocomplete="current-password" required maxlength="128"></label>
+        <button class="button" type="submit">Продолжить</button>
+      </form>
+      <form id="mfa-form" class="stack" hidden>
+        <label id="mfa-label">Код приложения-аутентификатора<input name="code" inputmode="numeric" autocomplete="one-time-code" required maxlength="32"></label>
+        <button class="button" type="submit">Подтвердить</button>
+        <button id="recovery-toggle" class="button secondary" type="button">Использовать код восстановления</button>
+      </form>
+      <p id="auth-hint" class="muted small"></p>
+    </section>
+
+    <section id="mfa-setup" class="panel" hidden>
+      <h1>Защитите аккаунт MFA</h1>
+      <p>Перед доступом к админским операциям настройте приложение-аутентификатор. Сохраните recovery-коды офлайн.</p>
+      <button id="begin-mfa" class="button" type="button">Настроить MFA</button>
+      <div id="mfa-enrollment" hidden>
+        <label>Секрет для ручного добавления<input id="mfa-secret" readonly></label>
+        <p class="muted small">Добавьте секрет в приложение-аутентификатор, затем введите текущий шестизначный код.</p>
+        <form id="enable-mfa-form" class="stack">
+          <label>Код подтверждения<input name="code" inputmode="numeric" autocomplete="one-time-code" required minlength="6" maxlength="8"></label>
+          <button class="button" type="submit">Включить MFA</button>
+        </form>
+      </div>
+      <div id="recovery-codes" class="recovery" hidden></div>
+    </section>
+
+    <section id="dashboard" hidden>
+      <div class="page-heading">
+        <div>
+          <h1>Пользователи</h1>
+          <p id="identity" class="muted"></p>
+        </div>
+      </div>
+      <form class="panel stack" id="messenger-desk"><h2>Аккаунты мессенджера</h2><label>Имя пользователя<input name="q" minlength="2" maxlength="120" required></label><button class="button">Найти в Ctrl</button><button class="button secondary" type="button" id="messenger-queue">Обращения и модерация</button></form><div id="messenger-results" aria-live="polite"></div><form id="search-form" class="search panel">
+        <label for="query">Поиск по e-mail или юзернейму</label>
+        <div class="search-row">
+          <input id="query" name="q" type="search" minlength="2" required autocomplete="off">
+          <button class="button" type="submit">Найти</button>
+        </div>
+      </form>
+      <section id="results" class="results" aria-live="polite"></section>
+    </section>
+  </main>
+</body>
+</html>

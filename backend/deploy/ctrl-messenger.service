@@ -1,0 +1,24 @@
+[Unit]
+Description=Ctrl Messenger
+After=network.target
+
+[Service]
+Type=simple
+DynamicUser=yes
+StateDirectory=ctrl-messenger
+UMask=0077
+WorkingDirectory=/opt/ctrl-messenger
+ExecStart=/opt/ctrl-messenger/ctrl-server
+Environment=CTRL_DATA=/var/lib/ctrl-messenger
+Environment=CTRL_PROTECTION_KEYS=/var/lib/ctrl-messenger/protection
+Environment=CTRL_LISTEN=http://127.0.0.1:48734
+EnvironmentFile=-/etc/ctrl-messenger.env
+Restart=on-failure
+RestartSec=3s
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectHome=yes
+ProtectSystem=strict
+
+[Install]
+WantedBy=multi-user.target

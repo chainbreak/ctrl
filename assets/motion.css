@@ -1,0 +1,14 @@
+:root{--ctrl-ease:cubic-bezier(.2,.72,.22,1)}
+.key,.chip,.tb,.ci,.sw{transition:transform 150ms var(--ctrl-ease),background-color 170ms ease,border-color 170ms ease,color 170ms ease,box-shadow 160ms ease}
+.key:active,.chip:active,.tb:active{transform:translateY(1px)}
+:focus-visible{outline:2px solid currentColor;outline-offset:3px}
+#toast{transition:opacity 170ms ease,transform 180ms var(--ctrl-ease)}
+#tc-widget-root img{filter:grayscale(1)}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:0s!important}.key:active,.chip:active,.tb:active{transform:none}}
+
+
+.call-panel{position:fixed;z-index:160;right:18px;bottom:24px;width:min(350px,calc(100vw - 36px));padding:16px;box-shadow:0 8px 28px #0006}.call-panel video{max-width:100%;max-height:32vh;border-radius:8px}
+
+.av.frame-silver{outline:2px solid #dbdcdd;outline-offset:2px}.av.frame-graphite{outline:3px double #999;outline-offset:2px}.community-list{display:grid;gap:8px}.dlg{max-height:min(85vh,780px);overflow:auto}.file-item{max-width:100%;white-space:normal;overflow-wrap:anywhere}.file-item small{opacity:.65}
+
+.avatar-button{border:0;padding:0;background:transparent;color:inherit;cursor:pointer}.peer-cover{width:100%;height:100px;object-fit:cover;border-radius:12px}.peer-avatar{width:72px;height:72px;border-radius:18px;object-fit:cover}.wallet-address{overflow-wrap:anywhere}.profile-heading{gap:.45rem;flex-wrap:wrap}

@@ -1,0 +1,37 @@
+;; A paid Ctrl gift produces one server-signed voucher. Any relayer can present it.
+;; The signed cell binds chain deployment, index, owner and immutable item content.
+(slice, int, int, cell, cell, cell) upgrade_state() inline {
+  slice s = get_data().begin_parse();
+  return (s~load_msg_addr(), s~load_uint(256), s~load_uint(64), s~load_ref(), s~load_ref(), s~load_dict());
+}
+() recv_internal(int value, cell msg, slice b) impure {
+  if (b.slice_empty?()) { return (); }
+  slice h = msg.begin_parse(); if (h~load_uint(4) & 1) { return (); }
+  var (admin, signer, count, codes, meta, issued) = upgrade_state();
+  int op = b~load_uint(32); b~skip_bits(64);
+  throw_unless(424, value >= 120000000);
+  if (op == 0x43544701) {
+    slice signature = b~load_bits(512); cell claim = b~load_ref(); b.end_parse();
+    throw_unless(401, check_signature(cell_hash(claim), signature, signer));
+    slice c = claim.begin_parse(); throw_unless(402, equal_slices(c~load_msg_addr(), my_address()));
+    int index = c~load_uint(256); slice owner = c~load_msg_addr(); force_chain(owner);
+    cell content = c~load_ref(); c.end_parse();
+    (cell previous, int exists) = issued.udict_get_ref?(256,index);
+    cell birth = begin_cell().store_slice(owner).store_ref(content).end_cell();
+    if (exists) { throw_unless(425, cell_hash(previous) == cell_hash(birth)); }
+    else {
+      issued~udict_set_ref(256,index,birth);
+      set_data(begin_cell().store_slice(admin).store_uint(signer,256).store_uint(count + 1,64).store_ref(codes).store_ref(meta).store_dict(issued).end_cell());
+    }
+    deliver(index,codes,birth);
+  } else { throw(0xffff); }
+}
+(int,cell,slice) get_collection_data() method_id {
+  var (admin,_,_,_,meta,_) = upgrade_state(); return (-1,meta,admin);
+}
+slice get_nft_address_by_index(int index) method_id {
+  var (_,_,_,codes,_,_) = upgrade_state(); return calculate_jetton_wallet_address(item_init(index,codes));
+}
+cell get_nft_content(int index, cell individual) method_id { return individual; }
+int get_voucher_key() method_id { var (_,signer,_,_,_,_) = upgrade_state(); return signer; }
+

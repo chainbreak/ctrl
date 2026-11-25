@@ -1,0 +1,28 @@
+name: Ctrl
+options:
+  deploymentTarget:
+    iOS: "16.0"
+targets:
+  Ctrl:
+    type: application
+    platform: iOS
+    sources: [Sources]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.ctrl.messenger
+        SWIFT_VERSION: "5.0"
+        CURRENT_PROJECT_VERSION: 20700
+        MARKETING_VERSION: 2.7.0
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: Ctrl
+        INFOPLIST_KEY_NSCameraUsageDescription: Камера для видеозвонков
+        INFOPLIST_KEY_NSMicrophoneUsageDescription: Микрофон для звонков
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+    info:
+      path: Generated/Info.plist
+      properties:
+        CFBundleDisplayName: Ctrl
+        NSCameraUsageDescription: Камера для видеозвонков
+        NSMicrophoneUsageDescription: Микрофон для звонков
+        UILaunchScreen: {}
+

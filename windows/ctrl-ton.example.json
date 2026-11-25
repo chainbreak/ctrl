@@ -1,0 +1,10 @@
+{
+  "publicOrigin": "https://auth.example.org",
+  "network": "-3",
+  "collection": "",
+  "giftCollection": "",
+  "usernameCollection": "",
+  "upgradeCollection": "",
+  "rpcEndpoint": "https://testnet-v4.tonhubapi.com"
+}
+

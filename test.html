@@ -1,0 +1,1555 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>CTRL — мессенджер</title><style>:root{--pn:var(--surface);--pn2:var(--bg);--ln:var(--line);--tx:var(--text);--mu:var(--mute);--wh:var(--text);--ac:var(--cap-side);--rd:var(--err);color-scheme:light dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*::before,*::after{box-sizing:inherit}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--tx);font:14px/1.45 var(--body);-webkit-font-smoothing:antialiased}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--wh);outline-offset:2px}
+#app{height:100%;display:grid;grid-template:"top top" 52px "rail main" 1fr/190px 1fr;min-height:0}
+#app.auth-required{grid-template:"top" 52px "main" 1fr/1fr}
+#app.auth-required .rail{display:none}
+.top{grid-area:top;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid var(--ln);background:var(--pn2)}
+.logo{display:flex;align-items:center;gap:10px;font-size:17px;letter-spacing:.14em}
+.lg-k{padding:3px 10px;font-size:12px;letter-spacing:0}
+.key{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:7px 14px;color:var(--tx);cursor:pointer;background:linear-gradient(#2c3037,#21242a);border:1px solid #3a404a;border-bottom:3px solid #050607;border-radius:9px;box-shadow:inset 0 1px 0 #ffffff26,0 2px 6px #0006;transition:transform .05s,border-bottom-width .05s,box-shadow .15s}
+.key:hover{box-shadow:inset 0 1px 0 #ffffff40,0 0 0 1px #ffffff55,0 0 12px #ffffff22}
+.key:active{transform:translateY(3px);border-bottom-width:1px}
+.key.hi{background:linear-gradient(#fff,#d9dce1);color:#1E2022;border-color:#fff;border-bottom-color:#8b9099;font-weight:600}
+.key.dn{color:var(--rd)}.key.sq{padding:7px 11px;min-width:38px}.key.sm{padding:5px 10px;font-size:12px}
+.rail{grid-area:rail;display:flex;flex-direction:column;gap:8px;padding:14px 12px;border-right:1px solid var(--ln);background:var(--pn2)}
+.rail .key{width:100%;min-height:44px;flex-direction:row;justify-content:flex-start;gap:12px;padding:10px 12px;font-size:14px}
+.rail .key.on{background:linear-gradient(#fff,#d9dce1);color:#1E2022;border-bottom-color:#8b9099}
+#main{grid-area:main;min-width:0;min-height:0;overflow:auto}
+.chats{display:grid;grid-template-columns:340px 1fr;height:100%}
+.cl{display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--ln);background:var(--pn2)}
+.sr{padding:12px 12px 8px}
+input[type=search],input[type=text],input[type=email],#inp,#bio,select.sel{width:100%;background:var(--bg);border:1px solid var(--ln);border-radius:9px;padding:9px 12px}
+select.sel{width:auto;padding:6px 10px;cursor:pointer}
+input:focus,select:focus{border-color:var(--ac);outline:none;box-shadow:0 0 0 2px #ffffff30}
+.fl{display:flex;gap:6px;padding:0 12px 10px;flex-wrap:wrap}
+.chip{background:var(--pn);border:1px solid var(--ln);border-radius:7px;padding:4px 10px;color:var(--mu);cursor:pointer;font-size:12px}
+.chip.on{background:var(--wh);color:#1E2022;border-color:var(--wh);font-weight:600}
+#list{overflow:auto;flex:1}
+.ci{display:flex;gap:11px;width:100%;padding:11px 12px;border:0;border-left:3px solid transparent;background:none;text-align:left;cursor:pointer;align-items:center}
+.ci:hover{background:var(--pn)}.ci.on{background:var(--pn);border-left-color:var(--wh)}
+.compact .ci{padding:7px 12px}.compact .av{width:34px;height:34px}
+.ct{display:flex;flex-direction:column;min-width:0;flex:1}
+.r1{display:flex;gap:6px;align-items:center}.r1 b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+time,.mu{color:var(--mu);font-size:12px}.r1 time{margin-left:auto}
+.r2{color:var(--mu);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}.r2 em{color:var(--wh);font-style:normal}
+.bd{background:var(--wh);color:#1E2022;border-radius:99px;font-size:11px;font-weight:700;padding:1px 7px}
+.av{position:relative;flex:none;width:42px;height:42px;border-radius:50%;background:linear-gradient(#2c3037,#1d2025);display:grid;place-items:center;border:2px solid #3a404a}
+.av.sm{width:30px;height:30px}.av.lg{width:76px;height:76px;font-size:26px}
+.dot{position:absolute;right:-2px;bottom:-2px;width:11px;height:11px;border-radius:50%;background:#7bd99b;border:2px solid var(--pn2)}
+.f-chrome{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--ac)}.f-double{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--wh),0 0 0 6px var(--bg),0 0 0 7px #7b818b}
+.f-key{border-radius:14px;border-bottom-width:6px;border-color:#8b9099}
+.ok{font-size:10px;font-weight:700;border:1px solid var(--ac);border-radius:5px;padding:0 5px;color:var(--wh)}
+.cw{display:flex;flex-direction:column;min-height:0;position:relative}
+.ch{display:flex;align-items:center;gap:11px;padding:10px 14px;border-bottom:1px solid var(--ln);background:var(--pn2);position:relative}
+.sb{color:var(--mu);font-size:12px}.e2{font-size:11px;color:#9fe0b4;border:1px solid #3f6b50;border-radius:6px;padding:1px 7px}
+.bk{display:none;background:none;border:0;font-size:28px;cursor:pointer;padding:0 4px}
+.menu{position:absolute;right:14px;top:58px;z-index:5;display:flex;flex-direction:column;gap:8px;padding:10px;background:var(--pn);border:1px solid var(--ln);border-radius:12px;box-shadow:0 12px 30px #0008}
+.msgs{flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:8px}
+.m{position:relative;max-width:min(520px,80%);align-self:flex-start;background:var(--pn);border:1px solid var(--ln);border-radius:14px 14px 14px 4px;padding:8px 12px 5px}
+.m.me{align-self:flex-end;background:#262B34;border-radius:14px 14px 4px 14px}
+.m p{margin:0;overflow-wrap:anywhere}
+.fs-sm .m p{font-size:13px}.fs-lg .m p{font-size:16px}
+.mm{display:flex;justify-content:flex-end;gap:6px;font-size:11px;color:var(--mu)}.mm u{text-decoration:none;color:var(--wh)}
+.tk{letter-spacing:-3px;margin-right:3px}.tk.read{color:var(--wh);font-weight:700}
+.mt{position:absolute;top:-14px;right:8px;display:none;gap:2px;background:var(--bg);border:1px solid var(--ln);border-radius:8px;padding:1px}
+.m:hover .mt,.m:focus-within .mt{display:flex}.mt button{background:none;border:0;cursor:pointer;padding:2px 7px;color:var(--ac)}
+.inp{display:flex;gap:10px;align-items:center;padding:10px 14px;border-top:1px solid var(--ln);background:var(--pn2);flex-wrap:wrap}
+.inp input{flex:1;min-width:0;padding:7px 12px}.ed{width:100%;font-size:12px;color:var(--mu)}.ed button{background:none;border:0;text-decoration:underline;cursor:pointer}
+.ro{margin:0;padding:14px;text-align:center;color:var(--mu);border-top:1px solid var(--ln)}
+.empty{padding:20px;color:var(--mu)}
+.pg{max-width:760px;margin:0 auto;padding:24px 18px 48px;display:flex;flex-direction:column;gap:14px;align-items:flex-start}
+.pg>.card,.pg>article,.pg>.sbar{width:100%}.pg h1{margin:0;font-size:24px}.pg h2{margin:0;font-size:15px}.pg p{margin:0}
+.sbar{display:flex;flex-direction:column;gap:10px;position:sticky;top:0;z-index:4;background:var(--bg);padding:4px 0 10px}
+.snav{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none;overscroll-behavior-x:contain;scroll-snap-type:x mandatory}
+.snav::-webkit-scrollbar{display:none}.snav .chip{scroll-snap-align:start}
+.swipe-hint{display:none;color:var(--mu);font-size:12px}
+.snav .chip{white-space:nowrap}
+.card{background:var(--pn);border:1px solid var(--ln);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+.chd{display:flex;align-items:center;justify-content:space-between;width:100%;gap:10px;margin-bottom:2px}
+.card>header{display:flex;gap:9px;align-items:center;width:100%}.card>header time{margin-left:auto}
+label{display:flex;justify-content:space-between;width:100%;color:var(--mu)}
+.who{flex-direction:row;align-items:center;gap:16px}.who b{font-size:18px}
+.bal{flex-direction:row;align-items:center;gap:26px;flex-wrap:wrap}.bal div{display:flex;flex-direction:column}.bal strong{font-size:26px}.bal .key{margin-left:auto}
+.fr{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px;width:100%}.fc{display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px 6px;background:var(--pn2);border-radius:12px}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:7px 4px;border-bottom:1px solid var(--ln)}th{color:var(--mu);font-weight:500}
+.row{display:flex;justify-content:space-between;align-items:center;gap:14px;width:100%;padding:7px 0;border-bottom:1px solid #1e2127}.row:last-child{border-bottom:0}.row>span{display:flex;flex-direction:column;min-width:0}
+.rctl{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.blk-list{display:flex;flex-direction:column;gap:8px;width:100%;margin-top:4px}
+.blk-item{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--pn2);border:1px solid var(--ln);border-radius:10px;padding:8px 12px}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;width:100%}
+.fg{display:flex;flex-direction:column;gap:5px}.fg span{font-size:12px;color:var(--mu)}
+.sw{flex:none;width:52px;height:30px;border-radius:9px;background:#15171a;border:1px solid var(--ln);padding:3px;cursor:pointer;box-shadow:inset 0 2px 4px #0008}
+.sw i{display:block;width:22px;height:20px;border-radius:6px;background:linear-gradient(#4a4f58,#33373d);border-bottom:3px solid #1a1c1e;transition:transform .12s}
+.sw.on{background:#cfd3d9}.sw.on i{transform:translateX(20px);background:linear-gradient(#fff,#d9dce1);border-bottom-color:#8b9099}
+.pl{flex-direction:row;align-items:center;gap:14px;flex-wrap:wrap}.cov{position:relative;width:84px;height:84px;border-radius:12px;background:repeating-linear-gradient(45deg,#3b4048 0 8px,#2f3338 8px 16px);display:grid;place-items:center}
+.pi{display:flex;flex-direction:column;gap:5px;flex:1;min-width:150px}.pb{height:6px;background:var(--bg);border-radius:9px;overflow:hidden}.pb i{display:block;height:100%;background:var(--wh)}
+.eq{display:flex;gap:4px;align-items:flex-end;height:30px}.eq i{width:5px;background:var(--wh);animation:eq .8s ease-in-out infinite alternate}.eq i:nth-child(2){animation-delay:.2s}.eq i:nth-child(3){animation-delay:.4s}.eq i:nth-child(4){animation-delay:.1s}
+@keyframes eq{from{height:6px}to{height:30px}}
+.tr{display:grid;grid-template-columns:1fr 1fr auto;gap:10px;width:100%;padding:9px 6px;background:none;border:0;border-radius:8px;text-align:left;cursor:pointer}.tr:hover,.tr.on{background:var(--pn2)}.tr.on span:first-child{font-weight:700}
+.mod{position:fixed;inset:0;background:#000a;display:grid;place-items:center;padding:16px;z-index:20}
+.dlg{width:min(420px,100%);background:var(--pn);border:1px solid var(--ln);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:10px}.dlg h2{margin:0}
+.opt{text-align:left;background:var(--pn2);border:1px solid var(--ln);border-radius:9px;padding:9px 12px;cursor:pointer}.opt.on{border-color:var(--wh);background:#262B34}
+.ac{display:flex;gap:10px;justify-content:flex-end;margin-top:6px;flex-wrap:wrap}
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;pointer-events:none;background:var(--wh);color:#1E2022;padding:9px 16px;border-radius:10px;font-weight:600;transition:.2s;z-index:30;max-width:90vw}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:760px){
+#app{grid-template:"top" 52px "main" 1fr "rail" auto/1fr}
+.rail{flex-direction:row;border-right:0;border-top:1px solid var(--ln);padding:8px;padding-bottom:calc(8px + env(safe-area-inset-bottom,0px))}.rail .key{flex:1;width:auto;min-width:0;flex-direction:column;justify-content:center;gap:2px;padding:8px 0;font-size:10px}.rail .key span{display:none}.pg.wide .mr{grid-template-columns:1fr auto}.mr .mu,.mr .pr{display:none}
+.chats{grid-template-columns:1fr}.chats .cw{display:none}.chats.open .cw{display:flex}.chats.open .cl{display:none}.bk{display:block}
+.m{max-width:88%}.mt{display:flex}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.sy{font-size:10px;font-weight:700;border:1px solid #3a404a;border-bottom-width:2px;border-radius:4px;padding:0 5px;background:#1d2025;color:var(--wh)}
+.k-group,.k-channel{border-radius:14px}.k-channel{background:linear-gradient(#e8eaee,#b9bec7);color:#0D0E11;border-color:#fff}
+.pg.wide{max-width:960px}.mh{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;width:100%;flex-wrap:wrap}.mh h1{font-size:34px;letter-spacing:-.02em}.tp{display:flex;flex-direction:column;text-align:right}.tp strong{font-size:20px}
+.tbs{display:flex;gap:22px;border-bottom:1px solid var(--ln);width:100%}.tb{background:none;border:0;border-bottom:2px solid transparent;padding:8px 0;color:var(--mu);font-size:16px;cursor:pointer}.tb.on{color:var(--wh);border-bottom-color:var(--wh)}
+.tbl{padding:4px 16px;gap:0}.mr{display:grid;grid-template-columns:1.3fr .8fr 1fr 1fr auto;gap:12px;align-items:center;width:100%;padding:13px 0;border-bottom:1px solid var(--ln)}.mr:last-child{border:0}.mr>b{font-size:16px}.pr{font-weight:700}
+.stt{font-size:12px;border:1px solid var(--ln);border-radius:99px;padding:2px 10px;justify-self:start}.s-auction{color:#8fc7ff}.s-sale{color:#9fe0b4}.s-sold{color:var(--mu)}
+.emp{align-items:center;text-align:center;padding:48px 16px}.big{color:var(--mu)}
+section{padding:0;border-top:0}
+.rail{justify-content:flex-start}
+.key{position:relative;inset:auto;font:inherit;letter-spacing:normal;background:radial-gradient(120% 90% at 30% 15%,var(--cap-top),color-mix(in srgb,var(--cap-top) 82%,var(--cap-side)));color:var(--cap-ink);border:0;box-shadow:0 3px 0 var(--cap-side),0 4px 0 var(--cap-base),inset 0 1px 0 var(--cap-glow);transition:transform .07s,box-shadow .07s}
+.key:hover{box-shadow:0 3px 0 var(--cap-side),0 4px 0 var(--cap-base),inset 0 1px 0 var(--cap-glow)}
+.key:active{transform:translateY(3px);border-bottom-width:0;box-shadow:0 0 0 var(--cap-side),0 1px 0 var(--cap-base),inset 0 1px 0 var(--cap-glow)}
+.key.hi,.rail .key.on{background:var(--cap-top);color:var(--cap-ink);border-color:transparent;border-bottom-color:transparent;box-shadow:0 3px 0 var(--cap-side),0 4px 0 var(--cap-base),inset 0 1px 0 var(--cap-glow)}
+.key.hi:active,.rail .key.on:active{transform:translateY(3px);box-shadow:0 0 0 var(--cap-side),0 1px 0 var(--cap-base),inset 0 1px 0 var(--cap-glow)}
+.key.dn{color:var(--err)}
+.top,.rail,.cl,.ch,.inp{background:var(--bg)}
+.card,.menu,.dlg{background:var(--surface)}
+.m{background:var(--surface);border-color:var(--line)}
+.m.me{background:var(--text);color:var(--ink-inv);border-color:var(--text)}
+.m.me .mm,.m.me .mm u{color:var(--ink-inv)}
+.av{background:var(--surface);border-color:var(--cap-side);color:var(--text)}
+.av.k-channel{background:var(--cap-top);color:var(--cap-ink);border-color:var(--cap-side)}
+.ci:hover,.ci.on{background:var(--surface)}
+.ci.on{border-left-color:var(--text)}
+.chip,.opt,.blk-item{background:var(--surface);border-color:var(--line);color:var(--text)}
+.chip.on,.opt.on{background:var(--cap-top);border-color:var(--cap-side);color:var(--cap-ink);box-shadow:0 2px 0 var(--cap-side)}
+.bd{background:var(--cap-top);color:var(--cap-ink)}
+.sy,.ok,.e2,.stt{border-color:var(--line);color:var(--text)}
+.sy{background:var(--surface)}
+.up{color:#4d9b67}.down{color:var(--err)}
+.e2{color:#4d9b67}
+.sw{background:var(--surface);box-shadow:inset 0 2px 4px rgba(0,0,0,.18)}
+.sw i{background:var(--cap-top);border-bottom-color:var(--cap-side)}
+.sw.on{background:var(--cap-side)}
+.sw.on i{background:var(--cap-top);border-bottom-color:var(--cap-base)}
+.cov{background:repeating-linear-gradient(45deg,var(--cap-top) 0 8px,var(--surface) 8px 16px)}
+.pb{background:var(--bg)}.pb i,.eq i{background:var(--text)}
+.row{border-bottom-color:var(--line)}
+.opt.on{background:var(--cap-top)}
+.stt{background:var(--surface)}
+.s-auction{color:var(--text)}.s-sale{color:var(--text)}
+.ro{border-top-color:var(--line)}
+input[type=search],input[type=text],input[type=email],#inp,#bio,select.sel{background:var(--surface);border-color:var(--line);color:var(--text)}
+input:focus,select:focus{border-color:var(--cap-side);box-shadow:0 0 0 2px var(--cap-glow)}
+.tk.read{color:var(--text)}
+#toast{background:var(--cap-top);color:var(--cap-ink)}
+.swipe-hint{display:none}
+.banner-preview{width:100%;height:78px;border-radius:12px;background:var(--banner-color,var(--surface));box-shadow:inset 0 1px 0 var(--cap-glow)}
+.banner-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;width:100%}
+.banner-option{display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px 8px;background:var(--pn2);border:1px solid var(--ln);border-radius:11px;text-align:center}
+.banner-swatch{width:48px;height:34px;border-radius:8px;background:var(--swatch);box-shadow:0 3px 0 #0004}
+.banner-option .key{width:100%}
+.wallet-actions{display:flex;gap:8px;flex-wrap:wrap;width:100%}
+.gift-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;width:100%}
+.gift-card{min-width:0;padding:9px;gap:8px;align-items:stretch}
+.gift-art{display:grid;place-items:center;width:100%;aspect-ratio:1;overflow:hidden;border-radius:10px;background:radial-gradient(circle,var(--bg),var(--surface) 72%)}
+.gift-art>div,.gift-art img{display:block;width:100%;height:100%}
+.gift-art img{object-fit:contain}
+.gift-info{display:flex;flex-direction:column;align-items:stretch;gap:6px;min-width:0}
+.gift-info h2{display:-webkit-box;overflow:hidden;font-size:14px;line-height:1.3;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+:root[data-theme="light"] .rail .key.on{background:linear-gradient(var(--cap-top),var(--cap-side));color:var(--cap-ink);border-bottom-color:var(--cap-base)}
+.chip.on{background:var(--cap-top);color:var(--cap-ink);border-color:var(--cap-side)}
+.gift-price{font-size:13px;font-weight:700}
+.gift-count{color:var(--mu);font-size:11px}
+.gift-card .key{width:100%;padding:6px 3px;font-size:12px;white-space:nowrap}
+.gift-footer{display:flex;flex-direction:column;gap:6px;width:100%;color:var(--mu);font-size:12px}
+.gift-error{padding:18px;text-align:center;color:var(--mu)}
+.auth-form{display:flex;flex-direction:column;gap:12px}
+.auth-form label{display:flex;flex-direction:column;gap:5px}
+.auth-form input{width:100%}
+.auth-tabs{display:flex;gap:8px}
+.auth-tabs .key{flex:1}
+.auth-page{min-height:100%;display:grid;place-items:center;padding:24px}
+.auth-card{width:min(440px,100%);padding:24px}
+.auth-card h1{margin:0;font-size:26px}
+.auth-card>p{margin:0}
+.profile-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%}
+.settings-heading{display:flex;align-items:center;gap:12px;width:100%}
+.settings-heading h1{margin:0}
+.ch{background:var(--banner-color,var(--bg))}
+:root[data-theme="light"]{--bg:#f1f3f7;--surface:#fff;--line:#d8dde6;--text:#202630;--mute:#687386;--err:#b42318;color-scheme:light}
+:root[data-theme="dark"]{--bg:#111318;--surface:#1b1e25;--line:#303640;--text:#edf0f5;--mute:#a3adbd;--err:#ff7777;color-scheme:dark}
+:root[data-theme="dark"] .rail .key.on{background:linear-gradient(#333943,#252a32);color:var(--text);border-bottom-color:#15181d}
+:root[data-theme="dark"] .chip.on{background:var(--surface);color:var(--text);border-color:var(--line)}
+:root[data-theme="dark"] .bd,:root[data-theme="dark"] #toast{color:#15181d}
+:root[data-theme="dark"] .m.me{background:#282f3a}
+:root[data-custom-theme] .key.hi{background:linear-gradient(var(--cap-top),var(--cap-side));color:var(--cap-ink);border-color:var(--cap-top);border-bottom-color:var(--cap-base)}
+.profile-hero{width:100%;overflow:hidden;padding:0;gap:0;background-image:linear-gradient(180deg,var(--surface) 28%,#0002),var(--profile-background);background-position:center;background-size:cover}
+.profile-cover{height:132px;background:linear-gradient(180deg,#0002,#0005),var(--profile-banner,linear-gradient(135deg,var(--cap-side),var(--surface)));background-position:center;background-size:cover}
+.profile-identity{display:flex;align-items:center;gap:14px;padding:14px 16px;background:linear-gradient(90deg,#0001,#0000)}
+.profile-identity .av{background-color:var(--surface);background-position:center;background-size:cover}
+.profile-customization{display:flex;flex-wrap:wrap;gap:8px;width:100%}
+.profile-customization .key{flex:1}
+.upload-input{display:none}
+.wallet-hero{width:100%;min-height:152px;justify-content:space-between;background:radial-gradient(circle at 90% 15%,var(--cap-glow),transparent 40%),linear-gradient(135deg,var(--surface),var(--bg));}
+.wallet-amount{display:flex;align-items:center;gap:14px}
+.wallet-coin{width:54px;height:54px;border-radius:17px;display:grid;place-items:center;background:linear-gradient(var(--cap-top),var(--cap-side));color:var(--cap-ink);font-weight:800;font-size:23px;box-shadow:0 6px 16px var(--cap-glow)}
+.wallet-amount strong{font-size:clamp(28px,5vw,38px);letter-spacing:-.04em}
+.wallet-address{max-width:100%;overflow-wrap:anywhere}
+.rate-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;width:100%}
+.rate-item{padding:12px;border:1px solid var(--line);border-radius:11px;background:var(--pn2)}
+.rate-item b,.rate-item span{display:block}
+.rate-item span{color:var(--mu);font-size:13px;margin-top:4px}
+@media(max-width:760px){
+  .snav{padding:0 2px 6px;gap:8px}
+  .snav .chip{flex:none;white-space:nowrap}
+  .swipe-hint{display:block}
+}
+@media(max-width:380px){.gift-grid{gap:6px}.gift-card{padding:6px}.gift-info h2{font-size:12px}.gift-count{font-size:10px}}
+</style><link rel="stylesheet" href="assets/motion.css"><link rel="stylesheet" href="assets/desktop.css"><script src="assets/morphdom.min.js"></script><script src="assets/motion.js"></script><script src="assets/bot-check.js"></script><script src="assets/installation.js"></script><script src="assets/mobile.js"></script><script src="assets/files.js"></script><script src="assets/profile.js"></script><script src="assets/wallet.js"></script><script src="assets/shop.js"></script><script src="assets/community.js"></script><script src="assets/live.js"></script><script src="assets/music.js"></script><script src="assets/private.bundle.js"></script><script src="assets/calls.js"></script></head><body><div id="app"></div><script src="assets/lottie.min.js"></script><script>"use strict";
+const esc = (s) => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+const now = () => new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+const mmss = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+const PREF_KEY = 'ctrl-ui-preferences-v1';
+function readPreferences() {
+  try {
+    const raw = localStorage.getItem(PREF_KEY);
+    if (!raw) return {};
+    const value = JSON.parse(raw);
+    if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('Stored preferences must be an object.');
+    return value;
+  } catch (error) {
+    console.error('Could not read saved CTRL interface preferences.', error);
+    return {};
+  }
+}
+const savedPreferences = readPreferences();
+const savedImage = (value) => typeof value === 'string' && value.length <= 1200000 && /^data:image\/(?:webp|png|jpeg);base64,/i.test(value) ? value : '';
+const systemChats = [
+  { id: 'system-ctrl', name: 'CTRL', kind: 'dm', ini: 'C', sub: '', unread: 0, sys: true, ok: false, msgs: [] },
+  { id: 'system-ctrlsup', name: 'ctrlSUP', kind: 'dm', ini: 'c', sub: '', unread: 0, sys: true, ok: false, msgs: [] }
+];
+const chats = systemChats.map(chat => ({ ...chat, msgs: [] }));
+const posts = [];
+const tracks = [];
+const items = [];
+let sessions = [];
+const packs = [];
+const reasons = ['Спам', 'Оскорбления', 'Мошенничество', 'Запрещённый контент'];
+const setCats = [['all', 'Все'], ['acc', 'Аккаунт'], ['priv', 'Приватность'], ['ui', 'Интерфейс и звук'], ['ntf', 'Уведомления'], ['data', 'Данные и сеансы'], ['help', 'Помощь']];
+const ic = { chats: 'M4 5h16v11H9l-5 4z', feed: 'M4 6h16M4 12h16M4 18h10', music: 'M9 18V6l10-2v12M9 18a3 3 0 11-6 0 3 3 0 016 0zm10-2a3 3 0 11-6 0 3 3 0 016 0z', me: 'M12 12a4 4 0 100-8 4 4 0 000 8zM4 21a8 8 0 0116 0', set: 'M4 7h10M18 7h2M4 17h2M10 17h10M16 5v4M8 15v4' };
+Object.assign(ic, { group: 'M16 11a3 3 0 100-6 3 3 0 000 6zM8 11a3 3 0 100-6 3 3 0 000 6zM2 20a6 6 0 0112 0M14 14a6 6 0 018 6', channel: 'M3 11v2l11 5V6zM14 9a3 3 0 010 6M6 14l1.5 5H10', market: 'M3 6h18v12H3zM6 9h2M10 9h2M14 9h2M18 9h1M5 12h2M9 12h2M13 12h2M17 12h2M7 15h10', gifts: 'M4 11h16v9H4zM3 7h18v4H3zM12 7v13M12 7C10 3 6 4 7 7M12 7c2-4 6-3 5 0', wallet: 'M3 6h18v13H3zM3 9h18M16 14h2' });
+Object.assign(ic,{
+  chats:'M19.5 15a3 3 0 0 1-3 3H10l-5.5 3v-5a3 3 0 0 1-1.5-2.6V7a3 3 0 0 1 3-3h10.5a3 3 0 0 1 3 3z',
+  feed:'M4 5h16v14H6a2 2 0 0 1-2-2zM7.5 9h5M7.5 12.5h9M7.5 16h7',
+  market:'M4 9l2-5h12l2 5M4 9c0 3 4 3 4 0 0 3 4 3 4 0 0 3 4 3 4 0 0 3 4 3 4 0M5 12v8h14v-8',
+  search:'M16 16l4.5 4.5M18 10.5a7.5 7.5 0 1 1-15 0 7.5 7.5 0 0 1 15 0z',
+  compose:'M12 5H6a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-6M16.8 3.6l3.6 3.6M10.5 17l-4 .8.9-4L17.5 3.6a1.7 1.7 0 0 1 2.4 0l.5.5a1.7 1.7 0 0 1 0 2.4z',
+  clip:'M8 13.8l6.7-6.7a2.5 2.5 0 0 1 3.5 3.5l-8.1 8.1a4.2 4.2 0 0 1-5.9-5.9l8.4-8.4a5.6 5.6 0 0 1 7.9 7.9l-8.2 8.2',
+  send:'M12 19V5m-6 6 6-6 6 6',arrowRight:'M4 12h15m-5-5 5 5-5 5',
+  phone:'M7.4 3.5 10 7.8 8 10.2a13.3 13.3 0 0 0 5.8 5.8l2.4-2 4.3 2.6c.8.5.8 1.4.4 2.1-.8 1.6-2.3 2.6-4.1 2.2C9.4 19.1 4.9 14.6 3.1 7.2 2.7 5.4 3.7 3.9 5.3 3.1c.7-.4 1.6-.4 2.1.4z',
+  camera:'M3 7a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zm13 3 5-3v10l-5-3',
+  more:'M5 12h.2M12 12h.2M19 12h.2',back:'m14 5-7 7 7 7'
+});
+const iconKey=(action,icon,label,extra='')=>key(action,svg(icon,19),'icon-control','aria-label="'+label+'" title="'+label+'" '+extra);
+const svg = (k, z = 20) => `<svg viewBox="0 0 24 24" width="${z}" height="${z}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${ic[k]}"/></svg>`;
+const S = {
+  tab: 'chats', cur: 'system-ctrl', open: false, filter: 'all', q: '', menu: false, modal: '', reason: '', edit: 0, draft: '',
+  sound: true, clicks: null, walletBalance: null, walletData: null, showBal: true, premium: false,
+  authenticated: false, previewMode: false, authMode: 'register', email: '', challengeId: '', cloudPasswordSet: false, bio: '', handle: '', tr: 0, play: false, pos: 0, liked: new Set(),
+  language: savedPreferences.language === 'en' ? 'en' : 'ru',
+  colorMode: savedPreferences.colorMode === 'light' ? 'light' : 'dark',
+  customThemeColor: typeof savedPreferences.customThemeColor === 'string' && /^#[\da-f]{6}$/i.test(savedPreferences.customThemeColor) ? savedPreferences.customThemeColor : '',
+  profileAvatar: savedImage(savedPreferences.profileAvatar),
+  profileBackground: savedImage(savedPreferences.profileBackground),
+  profileBanner: savedImage(savedPreferences.profileBanner),
+  chatBanner: savedImage(savedPreferences.chatBanner),
+  demoWalletBalance: 2500, exchangeRates: null, exchangeRatesLoading: false, exchangeRatesError: '',
+  opt: { last: true, rec: true, hw: false, ntf: true, pre: true, grp: true, mkt: true, auto: true, compact: false, enterSend: true, keyGlow: true },
+  seenMode: 'contacts', fontSize: 'md', cacheMb: null, setCat: 'all', setQ: '', pendingKill: '',
+  mk: 'num', mf: 'all', giftsOwned: { 'first-gift': 0, 'webm-gift-1': 0, 'webm-gift-2': 0 }, giftsLoaded: false, giftPurchasePending: false, giftOperationIds: {}, demoClicks: 1000
+};
+function savePreferences() {
+  try {
+    localStorage.setItem(PREF_KEY, JSON.stringify({
+      language: S.language,
+      colorMode: S.colorMode,
+      customThemeColor: S.customThemeColor,
+      profileAvatar: CtrlLive.enabled ? '' : S.profileAvatar,
+      profileBackground: CtrlLive.enabled ? '' : S.profileBackground,
+      profileBanner: CtrlLive.enabled ? '' : S.profileBanner,
+      chatBanner: CtrlLive.enabled ? '' : S.chatBanner
+    }));
+  } catch (error) {
+    console.error('Could not save CTRL interface preferences.', error);
+    toast('Не удалось сохранить настройки интерфейса на этом устройстве.');
+  }
+}
+function rgbToHsl(r, g, b) {
+  r /= 255; g /= 255; b /= 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b), delta = max - min;
+  let h = 0, s = 0;
+  const l = (max + min) / 2;
+  if (delta) {
+    s = delta / (1 - Math.abs(2 * l - 1));
+    if (max === r) h = ((g - b) / delta) % 6;
+    else if (max === g) h = (b - r) / delta + 2;
+    else h = (r - g) / delta + 4;
+    h = Math.round(h * 60);
+    if (h < 0) h += 360;
+  }
+  return [h, s, l];
+}
+function applyAppearance() {
+  const root = document.documentElement;
+  root.dataset.theme = S.colorMode;
+  root.toggleAttribute('data-custom-theme', Boolean(S.customThemeColor));
+  if (S.customThemeColor) {
+    const rgb = S.customThemeColor.slice(1).match(/.{2}/g).map(value => parseInt(value, 16));
+    const [hue, saturation] = rgbToHsl(...rgb);
+    const sat = Math.round(Math.max(42, Math.min(74, saturation * 100)));
+    root.style.setProperty('--cap-top', `hsl(${hue} ${sat}% ${S.colorMode === 'dark' ? 67 : 48}%)`);
+    root.style.setProperty('--cap-side', `hsl(${hue} ${sat}% ${S.colorMode === 'dark' ? 45 : 34}%)`);
+    root.style.setProperty('--cap-base', `hsl(${hue} ${sat}% ${S.colorMode === 'dark' ? 32 : 24}%)`);
+    root.style.setProperty('--cap-glow', `hsl(${hue} ${sat}% 55% / .32)`);
+    root.style.setProperty('--cap-ink', S.colorMode === 'dark' ? '#17191e' : '#ffffff');
+  } else {
+    ['--cap-top', '--cap-side', '--cap-base', '--cap-glow', '--cap-ink'].forEach(name => root.style.removeProperty(name));
+  }
+}
+const EN = {
+  'Лента':'Feed','Чаты':'Chats','Музыка':'Music','Маркет':'Market','Профиль':'Profile','Настройки':'Settings',
+  '← Профиль':'← Profile','Все':'All','Личные':'Direct','Группы':'Groups','Каналы':'Channels',
+  'Поиск · Ctrl+K':'Search · Ctrl+K','Ничего не найдено. Измените запрос или фильтр.':'Nothing found. Change your search or filter.',
+  'Пока нет чатов':'No chats yet','Начните переписку — найдите пользователя по юзернейму.':'Start a conversation by searching for a username.',
+  'Новый чат':'New chat','Выберите чат или начните новый':'Select a chat or start a new one',
+  'Переписки появятся здесь после входа и синхронизации.':'Conversations will appear here after sign-in and sync.',
+  'Сообщение':'Message','Отправить':'Send','Канал только для чтения':'This channel is read-only',
+  'Пользователь заблокирован. Разблокируйте его в меню или настройках, чтобы писать.':'This user is blocked. Unblock them in the menu or settings to send messages.',
+  'Пожаловаться':'Report','Разблокировать':'Unblock','Заблокировать':'Block','К списку':'Back to chats','Меню чата':'Chat menu',
+  'Публикации подписок — новые сверху.':'Posts from subscriptions, newest first.','Публикаций пока нет':'No posts yet',
+  'Здесь появятся новые публикации.':'Channel posts will appear here after the server is connected.',
+  'Треки появятся после подключения библиотеки к серверу.':'Tracks will appear after the library is connected to the server.',
+  'В библиотеке пока пусто':'Your library is empty','Загрузить трек':'Upload track','Играть':'Play','Пауза':'Pause',
+  'CTRL Market':'CTRL Market','Номера и юзернеймы за TAP. Номера +999 выдаёт только команда.':'Numbers and usernames for TAP. +999 numbers are issued by the team only.',
+  'Ваш баланс':'Your balance','Номера':'Numbers','Юзернеймы':'Usernames','Аукцион':'Auction','Продажа':'For sale',
+  'Продано':'Sold','Ставка +5%':'Bid +5%','Купить':'Buy','Лотов пока нет. Список появится после подключения маркета к серверу.':'No listings yet. Listings will appear when the market is connected to the server.',
+  'Подарки':'Gifts','Каталог и ваша коллекция подарков CTRL.':'CTRL gift catalog and your collection.',
+  'Загрузить аватар':'Upload avatar','Фон профиля':'Profile background','Баннер профиля':'Profile banner',
+  'Баннер профиля · Premium':'Profile banner · Premium','Собственные баннеры':'Custom banners',
+  'Профиль и чат':'Profile and chat','Доступно с Premium':'Available with Premium',
+  'Собственные баннеры профиля и чата доступны с Premium.':'Custom profile and chat banners are available with Premium.',
+  'Баннер чата · Premium':'Chat banner · Premium','Удалить аватар':'Remove avatar','Удалить фон':'Remove background',
+  'Удалить баннер профиля':'Remove profile banner','Удалить баннер чата':'Remove chat banner',
+  'Настройка профиля':'Profile customization','Изображения сохраняются только в этом браузере.':'Images are stored only in this browser.',
+  'Загрузка собственного баннера чата доступна с Premium.':'Custom chat banners are available with Premium.',
+  'Войдите или зарегистрируйтесь, чтобы настроить профиль':'Sign in or register to customize your profile',
+  'Войти или зарегистрироваться':'Sign in or register','О себе':'About me','Сохранить':'Save',
+  'Гость':'Guest','Файл':'File','700 МБ':'700 MB','2 ГБ':'2 GB','Блок по устройству':'Device block',
+  'нет':'No','да':'Yes','Демо-режим':'Demo mode','Кликов':'Clicks','Анимированный подарок':'Animated gift',
+  'Тема':'Theme','Интерфейс':'Interface','Язык':'Language','Чат':'Chat','Кошелёк':'Wallet',
+  'Аватар':'Avatar','Баннер':'Banner','Изображение':'Image','Баланс':'Balance',
+  'Только что':'Just now','В сети':'Online','Контакты':'Contacts','Сейчас':'Current','заблокирован':'Blocked',
+  'печатает…':'typing…','осталось':'remaining','Покупка…':'Buying…','Системный аккаунт CTRL':'CTRL system account',
+  'Верифицирован NOER':'Verified by NOER','Подтверждение регистрации':'Registration verification',
+  'Кто видит время визита':'Who can see your last seen','Информация об интерфейсе':'Interface information',
+  'ЦБ РФ':'Bank of Russia','Запрос на оформление Premium передан серверу.':'Premium activation request sent to the server.',
+  'Клики':'Clicks','Открыть кошелёк':'Open wallet','Открыть':'Open','Тариф: Premium':'Plan: Premium',
+  'Тариф: Free':'Plan: Free','Свой':'Custom','Баннер чата':'Chat banner','Включить Premium':'Enable Premium',
+  'Вернуть Free':'Switch to Free','Кошелёк':'Wallet','Кошелёк CTRL':'CTRL Wallet',
+  'Войдите, чтобы открыть кошелёк CTRL':'Sign in to open the CTRL wallet','Войти':'Sign in',
+  'Обновить':'Refresh','Внутренний баланс':'Internal balance','Демо-баланс':'Demo balance',
+  'Тестовый кошелёк · операции отключены':'Demo wallet · transactions disabled','Внутренний кошелёк':'Internal wallet',
+  'Пополнить':'Deposit','Перевести':'Transfer','Справочные курсы валют':'Reference exchange rates',
+  'Загрузка справочных курсов…':'Loading reference rates…','Справочные курсы временно недоступны.':'Reference rates are temporarily unavailable.',
+  'Курсы будут показаны после подключения API.':'Rates will appear after the API is connected.',
+  'Курс TAP не установлен и не рассчитывается по этим данным.':'No TAP exchange rate is set or derived from these figures.',
+  'История операций':'Transaction history','В демо-кошельке пока нет операций.':'No transactions in the demo wallet yet.',
+  'Операций пока нет. История загрузится после подключения кошелька к серверу.':'No transactions yet. History will load after the wallet is connected to the server.',
+  'Демо-баланс:':'Demo balance:','Баланс:':'Balance:','Баланс Кликов загрузится после входа':'Clicks balance loads after sign-in',
+  'Недостаточно Кликов для покупки.':'Not enough Clicks to purchase.','Войдите, чтобы загрузить баланс и купить подарок.':'Sign in to load your balance and buy gifts.',
+  'Загрузка станет доступна после подключения хранилища и серверного API.':'Uploads will be available after storage and the server API are connected.',
+  'Настройки':'Settings','Язык интерфейса':'Interface language','Выберите язык приложения':'Choose the app language',
+  'Тема интерфейса':'Interface theme','Сейчас: тёмная':'Current: dark','Сейчас: светлая':'Current: light',
+  'Цвета из изображения':'Colors from an image','Палитра применена к интерфейсу':'Palette applied to the interface',
+  'Загрузите изображение для подбора акцентного цвета':'Upload an image to choose an accent color',
+  'Загрузить тему':'Upload theme','Сбросить':'Reset','Тёмная':'Dark','Светлая':'Light',
+  'Цветовая тема обновлена.':'Color theme updated.','Изображение профиля обновлено.':'Profile image updated.',
+  'Загрузка собственных баннеров доступна только с Premium.':'Custom banners are available with Premium only.',
+  'Поле загрузки изображения не найдено.':'Image upload field not found.',
+  'Поддерживаются только PNG, JPEG и WebP.':'Only PNG, JPEG, and WebP are supported.',
+  'Размер изображения должен быть не больше 10 МБ.':'Image must be no larger than 10 MB.',
+  'Оптимизированное изображение превышает допустимый размер.':'The optimized image exceeds the allowed size.',
+  'Браузер не смог открыть это изображение.':'The browser could not open this image.',
+  'Браузер не смог обработать изображение.':'The browser could not process this image.',
+  'В изображении нет видимых пикселей.':'The image contains no visible pixels.',
+  'Неизвестный тип изображения.':'Unknown image type.',
+  'Не удалось обработать изображение.':'Unable to process the image.',
+  'Размер текста в чате':'Chat text size','Влияет на сообщения в диалогах':'Affects messages in conversations',
+  'Мелкий':'Small','Обычный':'Normal','Крупный':'Large','Компактный список чатов':'Compact chat list',
+  'Уменьшает высоту строк и аватаров в левой колонке':'Reduces row and avatar height in the left column',
+  'Щелчок клавиши Ctrl':'Ctrl key click','Звуковой отклик при нажатии кнопки Ctrl':'Sound when pressing the Ctrl button',
+  'Отправка по Enter':'Send with Enter','Отправлять сообщение по клавише Enter':'Send a message by pressing Enter',
+  'Сброс параметров интерфейса':'Reset interface settings','Вернуть шрифт, плотность и звук по умолчанию':'Restore default font, density, and sound',
+  'Сбросить настройки интерфейса на этом устройстве.':'Could not save interface settings on this device.',
+  'Интерфейс и звук':'Interface and sound','Приватность и безопасность':'Privacy and security',
+  'Приватность':'Privacy',
+  'Аккаунт':'Account','Уведомления':'Notifications','Данные и сеансы':'Data and sessions',
+  'Помощь':'Help','Помощь и система':'Help and system','Опасная зона':'Danger zone',
+  'Поиск по настройкам…':'Search settings…','Проведите в сторону, чтобы увидеть остальные разделы →':'Swipe to see the other sections →',
+  'Вернуть шрифт, плотность, язык и тему по умолчанию':'Restore the default font, density, language, and theme',
+  'По вашему запросу ничего не найдено.':'No settings match your search.',
+  'E-mail аккаунта':'Account email','Не подтверждён':'Not verified','Аккаунт':'Account',
+  'Юзернейм':'Username','Сохранить профиль':'Save profile','Облачный пароль':'Cloud password',
+  'Дополнительная защита включена':'Additional protection is enabled','Не настроен':'Not set',
+  'Внутренний кошелёк':'Internal wallet','Баланс загрузится с сервера':'Balance will load from the server',
+  'Баланс Кликов':'Clicks balance','Загрузится после входа':'Loads after sign-in','Пополнить':'Top up',
+  'Тарифный план':'Subscription plan','CTRL Premium активен · 2 ГБ, 20 каналов':'CTRL Premium active · 2 GB, 20 channels',
+  'CTRL Free · 700 МБ, 10 каналов':'CTRL Free · 700 MB, 10 channels','Узнать о Premium':'Learn about Premium',
+  'Время последнего визита':'Last seen','Только контакты':'Contacts only','Никто':'Nobody',
+  'Все пользователи':'Everyone','Кто видит время визита':'Who can see your last seen',
+  'Сейчас: Все пользователи':'Current: everyone','Сейчас: Только контакты':'Current: contacts only','Сейчас: Никто':'Current: nobody',
+  'Отметки о прочтении':'Read receipts','Показывать двойные галочки собеседникам':'Show double check marks to contacts',
+  'Баланс TAP в профиле':'Show TAP balance on profile','Отображать баланс кошелька публично':'Display wallet balance publicly',
+  'Блокировка по устройству':'Device blocking','Сквозное шифрование':'End-to-end encryption',
+  'Статус появится после подключения и проверки E2EE-сервера':'Status will appear after the E2EE server is connected and verified',
+  'Статус появится после подключения и проверки E2EE-сервера':'Status will appear after connecting and verifying the E2EE server',
+  'Не подключено':'Not connected','Чёрный список':'Blocked users','Список пуст':'List is empty',
+  'Снять все':'Unblock all','Размер текста':'Text size','Щелчок':'Click','Создать аккаунт CTRL':'Create a CTRL account',
+  'Создать':'Create','Изменить':'Change','Личные сообщения':'Direct messages',
+  'Уведомления о новых сообщениях в личке':'Notifications for new direct messages',
+  'Группы и каналы':'Groups and channels','Оповещения об упоминаниях и новых постах':'Alerts for mentions and new posts',
+  'Предпросмотр текста':'Message preview','Показывать текст сообщения во всплывающем окне':'Show message text in the notification',
+  'События CTRL Market':'CTRL Market events','Ставки, продажи и перебитые лоты за TAP':'Bids, sales, and outbid notices for TAP',
+  'Лимит размера файла':'File size limit','До 700 МБ на файл':'Up to 700 MB per file','До 2 ГБ на файл':'Up to 2 GB per file',
+  'Лимит каналов':'Channel limit','До 10 каналов':'Up to 10 channels','До 20 каналов':'Up to 20 channels',
+  'Автозагрузка медиа':'Automatic media download','Автоматически загружать фото и голосовые':'Automatically download photos and voice messages',
+  'Локальный кэш':'Local cache','Данные появятся после подключения хранилища':'Data will appear after storage is connected',
+  'Активные сеансы':'Active sessions','Список загрузится после подключения аккаунта к серверу':'The list will load after the account is connected to the server',
+  'Служба поддержки':'Support','Написать':'Contact','Версия интерфейса':'Interface version',
+  'Адаптируется под размер экрана автоматически':'Adapts to the screen size automatically',
+  'Удалить аккаунт':'Delete account','Удаление сотрёт аккаунт, историю переписок, ключи и привязанные данные без возможности восстановления.':'Deleting your account permanently erases the account, chat history, keys, and linked data.',
+  'Защита от твинков после блокировки · только в Premium':'Blocks repeat accounts after blocking · Premium only',
+  'Новые аккаунты нарушителя не смогут вам писать':'New accounts from a blocked user cannot message you',
+  'Пока нет чатов':'No chats yet','Пользователь заблокирован':'User blocked',
+  'Войдите':'Sign in','Изменить':'Change','Управлять':'Manage',
+  'Войти в CTRL':'Sign in to CTRL','Зарегистрируйтесь, чтобы открыть мессенджер.':'Register to open the messenger.',
+  'Войдите в существующий аккаунт.':'Sign in to an existing account.','Регистрация':'Register',
+  'Пароль':'Password','Зарегистрироваться':'Create account','Можно открыть интерфейс в режиме предпросмотра; серверные функции работать не будут.':'You can preview the interface; server features will be unavailable.',
+  'Тестировать интерфейс':'Preview interface','Подтвердите e-mail':'Verify your email',
+  'Для регистрации используйте адрес @gmail.com. Код будет отправлен после подключения почтового сервиса.':'Use a @gmail.com address to register. A code will be sent after the mail service is connected.',
+  'Введите код, отправленный на':'Enter the code sent to','Пожаловаться на':'Report',
+  'Демо-покупка:':'Demo purchase:','Код подтверждения придёт на e-mail после настройки почтового сервиса.':'Verification codes will be sent by email after the mail service is configured.',
+  'Доллар США':'US Dollar','Евро':'Euro',
+  'Код подтверждения':'Verification code',
+  'Изменить e-mail':'Change email','Подтвердить':'Verify','Отправить код повторно':'Resend code',
+  'Проверьте почту':'Check your email','Отмена':'Cancel','Продолжить':'Continue',
+  'Ctrl: нажмите, чтобы услышать щелчок':'Press Ctrl to hear a click',
+  'Сохранить профиль':'Save profile','Завершить сеанс':'End session','Завершить':'End',
+  'Облачный пароль':'Cloud password','Изменить облачный пароль':'Change cloud password',
+  'Создать облачный пароль':'Create cloud password',
+  'Дополнительный пароль для защиты аккаунта при входе с нового устройства.':'An extra password protects your account when signing in from a new device.',
+  'Текущий пароль':'Current password','Новый пароль':'New password','Повторите пароль':'Repeat password',
+  'Новый чат':'New chat','Юзернейм собеседника':'Contact username','Юзернейм получателя':'Recipient username',
+  'Перевести TAP':'Transfer TAP','Пополнить кошелёк':'Fund wallet','Сумма TAP':'TAP amount','Создать счёт':'Create invoice',
+  'Отправить жалобу':'Submit report','К жалобе будут приложены последние пять сообщений этого чата.':'The app will decrypt the last 5 messages on your device and send them to @ctrlSUP moderators.',
+  'Удалить аккаунт?':'Delete account?','Все данные будут стёрты безвозвратно.':'All data will be permanently erased.',
+  'Оставить':'Keep account','Удалить навсегда':'Delete permanently','Завершить сеанс?':'End this session?',
+  'Купить Клики':'Buy Clicks','Пакеты появятся после подключения платёжного провайдера.':'Packages will appear after a payment provider is connected.',
+  'Закрыть':'Close','Назад':'Back','Вперёд':'Forward','Реакция':'Reaction','Изменить':'Edit','Удалить':'Delete',
+  'Пожаловаться':'Report','Выберите причину жалобы':'Select a reason for the report','Жалоба':'Report',
+  'Спам':'Spam','Оскорбления':'Abuse','Мошенничество':'Fraud','Запрещённый контент':'Prohibited content',
+  'Войдите, чтобы начать чат.':'Sign in to start a chat.','Сервер не вернул созданный чат.':'The server did not return the created chat.',
+  'Канал только для чтения':'This channel is read-only','Редактирование':'Editing','отмена':'cancel',
+  'отправлено':'sent','доставлено':'delivered','прочитано':'read','изм. ':'edited ',
+  'Не удалось определить подарок.':'Could not identify the gift.',
+  'Недостаточно тестовых Кликов.':'Not enough demo Clicks.',
+  'В режиме предпросмотра меняется только тестовый баланс.':'Only the demo balance changes in preview mode.',
+  'E-mail подтверждён.':'Email verified.','Вход выполнен.':'Signed in.','Код отправлен на почту.':'Code sent by email.',
+  'Код отправлен повторно.':'Code resent.','Настройка визита обновлена':'Last-seen setting updated',
+  'Размер текста изменён':'Text size changed','Профиль сохранён.':'Profile saved.',
+  'Сервер вернул неполные данные профиля.':'The server returned incomplete profile data.',
+  'Не удалось сохранить настройки интерфейса на этом устройстве.':'Could not save interface settings on this device.'
+};
+Object.assign(EN,{
+  'Вход в Ctrl':'Sign in to Ctrl','Впервые в Ctrl?':'New to Ctrl?','Вернуться ко входу':'Back to sign in','Вход по номеру':'Sign in with a number',
+  'Войти по NFT-номеру':'Sign in with an NFT number','Подтвердите владение номером в TON-кошельке.':'Confirm ownership of your number in your TON wallet.',
+  'Почта или имя пользователя':'Email or username','От 12 символов':'At least 12 characters','Поиск по чатам':'Search chats','Непрочитанные':'Unread',
+  'Поиск':'Search','Здесь появятся ваши чаты':'Your chats will appear here','Все сообщения прочитаны':'All caught up','Ничего не найдено':'No results',
+  'Написать сообщение':'Write a message','Ваши сообщения':'Your messages','Выберите диалог в списке или напишите первым.':'Choose a conversation or start a new one.',
+  'Группы и каналы':'Groups and channels','Пока нет сообщений':'No messages yet','Сегодня':'Today','Вчера':'Yesterday','Аудиозвонок':'Audio call','Видеозвонок':'Video call',
+  'Восстанавливаем связь…':'Reconnecting…','Выйти из аккаунта':'Sign out','Верификация NOER':'NOER verification','Редактировать профиль':'Edit profile',
+  'Открыть чат':'Open chat','Имя пользователя или NFT-номер':'Username or NFT number','Никого не нашли':'No matches','Написать пост':'Write a post'
+});
+const EN_PREFIXES = Object.entries(EN).sort(([first], [second]) => second.length - first.length);
+function translate(value) {
+  if (S.language !== 'en') return value;
+  if (EN[value]) return EN[value];
+  const prefix = EN_PREFIXES.find(([russian]) => value.startsWith(russian));
+  return prefix ? `${prefix[1]}${value.slice(prefix[0].length)}` : value;
+}
+function localizeDom(root) {
+  if (!root || S.language !== 'en') return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  let node;
+  while ((node = walker.nextNode())) {
+    if (node.parentElement?.closest('.m,[data-no-translate]')) continue;
+    const original = node.nodeValue.trim();
+    const localized = translate(original);
+    if (localized !== original) node.nodeValue = node.nodeValue.replace(original, localized);
+  }
+  root.querySelectorAll('[aria-label],[title],[placeholder],[alt]').forEach(element => {
+    ['aria-label', 'title', 'placeholder', 'alt'].forEach(attribute => {
+      const value = element.getAttribute(attribute);
+      if (value) element.setAttribute(attribute, translate(value));
+    });
+  });
+}
+const cur = () => chats.find(c => c.id === S.cur) ?? null;
+const giftDefinitions = [
+  { id: 'first-gift', name: 'Подарок CTRL', file: 'assets/gifts/first-gift/animation.tgs', type: 'tgs', price: 50 },
+  { id: 'webm-gift-1', name: 'Подарок 2', file: 'assets/gifts/webm-gift-1/animation.png', poster: 'assets/gifts/webm-gift-1/poster.png', type: 'apng', price: 50 },
+  { id: 'webm-gift-2', name: 'Подарок 3', file: 'assets/gifts/webm-gift-2/animation.png', poster: 'assets/gifts/webm-gift-2/poster.png', type: 'apng', price: 50 }
+];
+let giftAnimation = null;
+const watchedGiftImages=new WeakSet();
+let csrfToken = '';
+async function getCsrfToken() {
+  if (csrfToken) return csrfToken;
+  let response;
+  try {
+    response = await fetch('/api/auth/csrf', { credentials: 'include', headers: { Accept: 'application/json' } });
+  } catch {
+    throw new Error(navigator.onLine ? 'Не удалось получить защитный токен.' : 'Нет подключения к интернету.');
+  }
+  if (!response.ok) throw new Error(`Не удалось получить защитный токен (${response.status}).`);
+  const result = await response.json();
+  if (typeof result.requestToken !== 'string' || !result.requestToken) {
+    throw new Error('Сервер не выдал защитный токен для запроса.');
+  }
+  csrfToken = result.requestToken;
+  return csrfToken;
+}
+async function apiRequest(path, { method = 'GET', body } = {}) {
+  if(CtrlLive.enabled)return CtrlLive.request(path,method,body);
+  if (S.previewMode) throw new Error('В режиме предпросмотра запросы к серверу отключены.');
+  const headers = { Accept: 'application/json', ...(body === undefined ? {} : { 'Content-Type': 'application/json' }) };
+  if (!['GET', 'HEAD', 'OPTIONS'].includes(method.toUpperCase())) {
+    headers['X-CSRF-TOKEN'] = await getCsrfToken();
+  }
+  let response;
+  try {
+    response = await fetch(`/api${path}`, {
+      method,
+      credentials: 'include',
+      headers,
+      body: body === undefined ? undefined : JSON.stringify(body)
+    });
+  } catch (error) {
+    if (path.startsWith('/auth/login') || path === '/auth/logout') csrfToken = '';
+    throw new Error(navigator.onLine ? 'Не удалось связаться с сервером.' : 'Нет подключения к интернету.');
+  }
+  if (path.startsWith('/auth/login') || path === '/auth/logout') csrfToken = '';
+
+  const text = await response.text();
+  let data = {};
+  if (!response.ok) {
+    if ((response.headers.get('content-type') || '').includes('application/json') && text) {
+      try { data = JSON.parse(text); }
+      catch (error) {
+        if (!(error instanceof SyntaxError)) throw error;
+      }
+    }
+    const error = new Error(data && typeof data.message === 'string' ? data.message : `Запрос не выполнен (${response.status}).`);
+    error.status = response.status;
+    throw error;
+  }
+  if (text) {
+    try { data = JSON.parse(text); }
+    catch { throw new Error('Сервер вернул некорректный ответ.'); }
+  }
+  return data;
+}
+const showApiError = error => toast(error.message || 'Не удалось выполнить запрос.');
+let ac = null;
+function tick() {
+  if (!S.sound) return;
+  try {
+    ac ??= new AudioContext();
+    const t = ac.currentTime, o = ac.createOscillator(), g = ac.createGain();
+    o.frequency.setValueAtTime(240, t);
+    o.frequency.exponentialRampToValueAtTime(70, t + 0.05);
+    g.gain.setValueAtTime(0.16, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.07);
+    o.connect(g).connect(ac.destination);
+    o.start(t);
+    o.stop(t + 0.08);
+    const b = ac.createBuffer(1, Math.floor(ac.sampleRate * 0.012), ac.sampleRate), d = b.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
+    const s = ac.createBufferSource(), n = ac.createGain();
+    n.gain.value = 0.1;
+    s.buffer = b;
+    s.connect(n).connect(ac.destination);
+    s.start(t);
+  } catch { }
+}
+let tt = 0;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  if (!el) return;
+  el.textContent = translate(msg);
+  el.classList.add('show');
+  clearTimeout(tt);
+  tt = window.setTimeout(() => el.classList.remove('show'), 2600);
+}
+const key = (a, label, cls = '', extra = '') => `<button class="key ${cls}" data-a="${a}" ${extra}>${label}</button>`;
+const av = (c) => `<span class="av k-${c.kind} frame-${esc(c.frame||'')}">${c.kind === 'dm' ? `<b>${esc(c.ini)}</b>` : svg(c.kind === 'group' ? 'group' : 'channel', 22)}${c.sub === 'в сети' && S.opt.last ? '<i class="dot" title="в сети"></i>' : ''}</span>`;
+const badge = (c) => (c.ok ? '<span class="ok" title="Верифицирован NOER">NOER</span>' : c.sys ? '<span class="sy" title="Системный аккаунт CTRL">⌃</span>' : '');
+const last = (c) => c.msgs[c.msgs.length - 1];
+function listHtml() {
+  const q = S.q.trim().toLowerCase();
+  const rows = chats.filter(c => (S.filter === 'all' || (S.filter === 'unread' && c.unread) || c.kind === S.filter) && (!q || [c.name,c.sub,c.preview?.text].some(v=>v?.toLowerCase().includes(q)) || c.msgs.some(x => x.text.toLowerCase().includes(q))));
+  if (!rows.length) return '<div class="list-empty">'+(q?'Ничего не найдено':S.filter==='unread'?'Все сообщения прочитаны':'Здесь появятся ваши чаты')+'</div>';
+  return rows.map(c => {
+    const l = last(c) || c.preview;
+    const subTxt = c.blocked ? translate('заблокирован') : (c.typing ? `<em>${translate('печатает…')}</em>` : `<span data-no-translate>${esc(CtrlLive.enabled?CtrlFiles.summary(l?.text??''):(l?.text??''))}</span>`);
+    return `<button data-motion-id="chat-${esc(c.id)}" class="ci ${c.id === S.cur ? 'on' : ''}" data-a="chat" data-id="${c.id}">${av(c)}<span class="ct"><span class="r1">${badge(c)}<b data-no-translate>${esc(c.name)}</b><time>${l ? l.t : ''}</time></span><span class="r2">${subTxt}</span></span>${c.unread ? `<span class="bd">${c.unread}</span>` : ''}</button>`;
+  }).join('');
+}
+const ticks = (s) => S.opt.rec ? `<span class="tk ${s}" title="${s === 'sent' ? 'отправлено' : s === 'delivered' ? 'доставлено' : 'прочитано'}">${s === 'sent' ? '✓' : '✓✓'}</span>` : '';
+function msgHtml(x, c) {
+  const tools = c.kind === 'channel' ? '' : `<span class="mt"><button data-a="react" data-id="${x.id}" aria-label="Реакция">♥</button>${x.mine ? `<button ${CtrlLive.enabled && CtrlFiles.isFile(x.text)?'hidden':''} data-a="edit" data-id="${x.id}" aria-label="Изменить">✎</button><button data-a="del" data-id="${x.id}" aria-label="Удалить">✕</button>` : ''}</span>`;
+  return `<div data-motion-id="message-${esc(c.id)}-${esc(x.id)}" data-msg="${esc(x.id)}" class="m ${x.mine ? 'me' : ''}">${tools}<p>${CtrlLive.enabled ? CtrlFiles.view(x.text,x.id) : esc(x.text)}</p><span class="mm">${x.re ? '<u>♥</u>' : ''}${x.edited ? 'изм. ' : ''}${x.t}${x.mine ? ticks(x.st) : ''}</span></div>`;
+}
+function timeline(c) {
+  if(!c.msgs.length) return c.loaded?'<p class="conversation-start">Пока нет сообщений</p>':'';
+  let previousDay='';
+  const today=new Date(),yesterday=new Date();
+  yesterday.setDate(today.getDate()-1);
+  return c.msgs.map(m=>{
+    let day='';
+    if(m.created){
+      const date=new Date(m.created), key=date.toDateString();
+      if(key!==previousDay){
+        const label=key===today.toDateString()?translate('Сегодня'):key===yesterday.toDateString()?translate('Вчера'):
+          date.toLocaleDateString(S.language==='en'?'en':'ru',{day:'numeric',month:'long',...(date.getFullYear()===today.getFullYear()?{}:{year:'numeric'})});
+        day='<div class="day-divider"><span>'+esc(label)+'</span></div>';previousDay=key;
+      }
+    }
+    return day+msgHtml(m,c);
+  }).join('');
+}
+function chatHtml() {
+  const c = cur();
+  if (!c) return `<div class="empty-chat"><span class="conversation-glyph">${svg('chats',30)}</span><h2>Ваши сообщения</h2><span>Выберите диалог в списке или напишите первым.</span>${key('newchat','Написать сообщение','hi')}</div>`;
+  const input = c.kind === 'channel' ? '<p class="ro">Канал только для чтения</p>' : c.blocked ? '<p class="ro">Пользователь заблокирован. Разблокируйте его в меню или настройках, чтобы писать.</p>'
+    : `<div class="inp">${S.edit ? '<span class="ed">Редактирование <button data-a="cancel">отмена</button></span>' : ''}${CtrlLive.enabled ? iconKey('attachFile','clip','Прикрепить файл') : ''}<textarea id="inp" rows="1" maxlength="2000" aria-label="Сообщение" placeholder="Сообщение">${esc(S.draft)}</textarea><button class="key hi send-control" data-a="send" aria-label="Отправить" title="Отправить">${svg('send',19)}${c.fee ? `<span>${Number(c.fee)} Кликов</span>` : ''}</button></div>`;
+  const menu = S.menu ? `<div class="menu">${CtrlLive.enabled && S.premium ? key('deviceBlock','Заблокировать устройство') : ''}${key('report', 'Пожаловаться')}${key('block', c.blocked ? 'Разблокировать' : 'Заблокировать')}</div>` : '';
+  const cls = `${S.fontSize === 'sm' ? 'fs-sm' : S.fontSize === 'lg' ? 'fs-lg' : ''}`;
+  const banner = S.chatBanner && (S.previewMode || S.premium)
+    ? `linear-gradient(#0002,#0004),url('${S.chatBanner}')`
+    : 'var(--bg)';
+  return `<header class="ch" style="--banner-color:${banner}"><button class="bk" data-a="back" aria-label="К списку">${svg('back',22)}</button>${CtrlLive.enabled ? `<button class="avatar-button" data-a="peerProfile" aria-label="Профиль собеседника">${av(c)}</button>` : av(c)}<span class="ct"><span class="r1">${badge(c)}<b data-no-translate>${esc(c.name)}</b></span><span class="sb">${c.typing ? translate('печатает…') : `<span data-no-translate>${esc(c.sub)}</span>`}</span></span>${CtrlLive.enabled && c.peerId ? iconKey('audioCall','phone','Аудиозвонок')+iconKey('videoCall','camera','Видеозвонок') : ''}${iconKey('menu','more','Меню чата')}${menu}</header><div class="msgs ${cls}" id="msgs">${timeline(c)}</div>${input}`;
+}
+const postHtml = (p) => `<article class="card"><header><span class="av sm"><b>${esc(p.by[0].toUpperCase())}</b></span><b data-no-translate>@${esc(p.by)}</b><time>${esc(Number.isFinite(Date.parse(p.t))?new Date(p.t).toLocaleDateString(S.language==='en'?'en':'ru',{day:'numeric',month:'short'}):p.t)}</time></header><p data-no-translate>${esc(p.text)}</p>${key('like', `♥ ${p.likes + (S.liked.has(p.id) ? 1 : 0)}`, S.liked.has(p.id) ? 'hi' : '', `data-id="${p.id}"`)}</article>`;
+function musicHtml() {
+  if(CtrlLive.enabled && !tracks.length)return `<div class="pg"><h1>Музыка</h1><section class="card"><h2>Ваша библиотека</h2><p class="mu">Добавьте аудиофайл с компьютера.</p>${key('upload','Добавить трек','hi')}</section></div>`;
+  if (!tracks.length) return `<div class="pg"><h1>Музыка</h1><p class="mu">Треки появятся после подключения библиотеки к серверу.</p><div class="card emp"><b>В библиотеке пока пусто</b>${key('upload', 'Загрузить трек', 'hi')}</div></div>`;
+  const t = tracks[S.tr];
+  return `<div class="pg"><h1>Музыка</h1><p class="mu">Ваша музыкальная библиотека.</p><div class="card pl"><div class="cov">${S.play ? '<span class="eq"><i></i><i></i><i></i><i></i></span>' : ''}</div><div class="pi"><b>${esc(t.t)}</b><span class="mu">${esc(t.a)}</span><div class="pb" id="pbar"><i id="pfill" style="width:${(S.pos / t.d) * 100}%"></i></div><span class="mu"><span id="ppos">${mmss(S.pos)}</span> / ${mmss(t.d)}</span></div>${key('prev', '‹‹', 'sq', 'aria-label="Назад"')}${key('play', S.play ? 'Пауза' : 'Играть', 'hi')}${key('next', '››', 'sq', 'aria-label="Вперёд"')}</div><div class="card">${tracks.map((x, i) => `<button class="tr ${i === S.tr ? 'on' : ''}" data-a="track" data-id="${i}"><span>${esc(x.t)}</span><span class="mu">${esc(x.a)}</span><span class="mu">${mmss(x.d)}</span></button>`).join('')}</div>${key('upload', 'Загрузить трек')}</div>`;
+}
+function meHtml() {
+  const identity = S.authenticated ? (S.displayName || S.handle || S.email) : translate('Гость');
+  const avatarStyle = S.profileAvatar ? `style="background-image:url('${S.profileAvatar}')"` : '';
+  const profileBanner = S.profileBanner && (S.previewMode || S.authenticated) ? `url('${S.profileBanner}')` : '';
+  const profileBackground = S.profileBackground ? `url('${S.profileBackground}')` : '';
+  const actions=(action,label,icon,extra='')=>key(action,svg(icon,18)+'<span>'+label+'</span>'+svg('arrowRight',15),'profile-row',extra);
+  const images=[['profileAvatar','Аватар'],['profileBackground','Фон профиля'],['profileBanner','Баннер профиля'],['chatBanner','Баннер чата']];
+  return `<div class="pg profile-page"><header class="page-title"><h1>Профиль</h1></header>
+    <section class="card profile-hero" style="--profile-banner:${profileBanner||'linear-gradient(115deg,#414141,#202020 58%,#171717)'};--profile-background:${profileBackground||'none'}">
+      <div class="profile-cover"></div><div class="profile-identity"><span class="av lg" ${avatarStyle}><b>${S.profileAvatar?'':esc(Array.from(identity.replace(/^@/,''))[0]||'')}</b></span>
+      <div><div class="r1"><b data-no-translate>${esc(identity)}</b>${S.verified?'<span class="ok">NOER</span>':''}${S.premium?'<span class="ok">Ctrl+</span>':''}</div>
+      <span class="mu" data-no-translate>${esc((S.handle||S.email||'').replace(/^@?/,'@'))}</span></div></div>${S.bio?`<p class="profile-bio" data-no-translate>${esc(S.bio)}</p>`:''}</section>
+    <details class="profile-details"><summary>Редактировать профиль</summary><div class="profile-editor">
+      <label for="bio">О себе <small id="bc">${S.bio.length}/100</small></label><input id="bio" maxlength="100" value="${esc(S.bio)}">${key('saveProfile','Сохранить','hi sm')}
+      <div class="profile-images">${images.map(([id,label])=>`<div><span>${label}</span>${key('pickImage',S[id]?'Заменить':'Загрузить','sm',`data-id="${id}"`)}${S[id]?key('clearImage','Удалить','sm',`data-id="${id}"`):''}</div>
+        <input class="upload-input" id="upload-${id}" type="file" accept="image/png,image/jpeg,image/webp${S.premium&&id.endsWith('Banner')?',image/gif':''}" data-upload="${id}">`).join('')}</div></div></details>
+    <div class="profile-list">${actions('tab','Кошелёк','wallet','data-id="wallet"')}${actions('tab','Подарки','gifts','data-id="gifts"')}${actions('prem','Ctrl+ Premium','market')}</div>
+    ${CtrlLive.enabled?`<div class="profile-list">${actions('accountOptions','Оформление и Клики','set')}${actions('noer','Верификация NOER','me')}${actions('helpDesk','Поддержка','chats')}</div>${key('logout','Выйти из аккаунта','auth-link')}`:''}</div>`;
+}
+function walletHtml() {
+  if(CtrlLive.enabled)return CtrlWallet.html();
+  if(CtrlLive.enabled)return `<div class="pg"><h1>Кошелёк</h1><section class="card"><h2>TAP</h2>${key("tonShop","Посмотреть баланс","hi")}</section></div>`;
+  if (!S.authenticated && !S.previewMode) return `<div class="pg"><h1>Кошелёк</h1><div class="card emp"><b>Войдите, чтобы открыть кошелёк CTRL</b>${key('authOpen', 'Войти', 'hi')}</div></div>`;
+  const transactions = S.walletData?.transactions ?? [];
+  const balance = S.previewMode ? S.demoWalletBalance : S.walletBalance;
+  const ratesContent = S.exchangeRatesLoading
+    ? '<p class="mu">Загрузка справочных курсов…</p>'
+    : S.exchangeRates
+      ? `<div class="rate-list">${S.exchangeRates.rates.filter(rate => ['USD', 'EUR'].includes(rate.currencyCode)).map(rate => `<div class="rate-item"><b>1 ${esc(rate.currencyCode)} = ${Number(rate.rate).toLocaleString(S.language === 'en' ? 'en-GB' : 'ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 4 })} RUB</b><span>${esc(translate(rate.currencyName))}</span></div>`).join('')}</div><p class="mu">${S.language === 'en' ? 'Updated' : 'Обновлено'}: ${new Date(S.exchangeRates.updatedAt).toLocaleString(S.language === 'en' ? 'en-GB' : 'ru-RU')}</p>`
+      : `<p class="mu">${S.exchangeRatesError || 'Курсы будут показаны после подключения API.'}</p>`;
+  return `<div class="pg"><div class="profile-heading"><h1>Кошелёк CTRL</h1>${key('walletRefresh', 'Обновить', 'sm')}</div><div class="card wallet-hero"><div class="wallet-amount"><span class="wallet-coin">T</span><div><span class="mu">${S.previewMode ? 'Демо-баланс' : 'Внутренний баланс'}</span><strong>${balance === null ? '—' : Number(balance).toLocaleString('ru-RU')} TAP</strong></div></div><span class="mu wallet-address">${S.walletData?.address ? esc(S.walletData.address) : S.previewMode ? 'Тестовый кошелёк · операции отключены' : 'Внутренний кошелёк'}</span></div>
+<div class="wallet-actions">${key('walletDeposit', 'Пополнить', 'hi', S.previewMode ? 'disabled title="Демо-режим"' : '')}${key('walletTransfer', 'Перевести', '', S.previewMode ? 'disabled title="Демо-режим"' : '')}</div>
+<div class="card"><div class="chd"><h2>Справочные курсы валют</h2><span class="mu">ЦБ РФ</span></div>${ratesContent}<p class="mu">Курс TAP не установлен и не рассчитывается по этим данным.</p></div>
+<div class="card"><h2>История операций</h2>${transactions.length ? transactions.map(x => `<div class="row"><span><b data-no-translate>${esc(x.title)}</b><span class="mu" data-no-translate>${esc(x.createdAt)}</span></span><b>${Number(x.amount).toLocaleString(S.language === 'en' ? 'en-GB' : 'ru-RU')} TAP</b></div>`).join('') : `<p class="mu">${S.previewMode ? 'В демо-кошельке пока нет операций.' : 'Операций пока нет. История загрузится после подключения кошелька к серверу.'}</p>`}</div></div>`;
+}
+const sw = (a, on, label, hint, id = '') => `<div class="row" data-srch="${esc((label + ' ' + hint).toLowerCase())}"><span><b>${label}</b><span class="mu">${hint}</span></span><button class="sw ${on ? 'on' : ''}" role="switch" aria-checked="${on}" aria-label="${label}" data-a="${a}" data-id="${id}"><i></i></button></div>`;
+const op = (k, label, hint) => sw('opt', !!S.opt[k], label, hint, k);
+const rw = (t, h, r = '') => `<div class="row" data-srch="${esc((t + ' ' + h).toLowerCase())}"><span><b>${t}</b><span class="mu">${h}</span></span>${r ? `<span class="rctl">${r}</span>` : ''}</div>`;
+function sec(cat, title, rowsHtml, badgeTxt = '') {
+  if (S.setCat !== 'all' && S.setCat !== cat) return '';
+  const rawQuery = S.setQ.trim().toLowerCase();
+  const exactTranslation = Object.entries(EN).find(([, english]) => english.toLowerCase() === rawQuery);
+  const reverseTranslations = new Map(Object.entries(EN).map(([russian, english]) => [english.toLowerCase(), russian.toLowerCase()]));
+  const q = S.language === 'en'
+    ? exactTranslation ? exactTranslation[0].toLowerCase() : rawQuery.split(/\s+/).map(term => reverseTranslations.get(term) || term).join(' ')
+    : rawQuery;
+  const terms = q.split(/\s+/).filter(Boolean);
+  const filtered = q ? rowsHtml.filter(r => !r.datasetSrch || terms.every(term => r.datasetSrch.includes(term)) || title.toLowerCase().includes(q)) : rowsHtml;
+  const html = filtered.map(r => r.html).join('');
+  if (!html) return '';
+  return `<section class="card" id="sec-${cat}"><div class="chd"><h2>${title}</h2>${badgeTxt ? `<span class="mu">${badgeTxt}</span>` : ''}</div>${html}</section>`;
+}
+const mkRow = (html, searchText = '') => {
+  const row = typeof html === 'string' ? null : html;
+  return {
+    html: row ? row.html : html,
+    datasetSrch: (searchText || (row && row.datasetSrch) || '').toLowerCase()
+  };
+};
+function setHtml() {
+  const blocked = chats.filter(c => c.blocked);
+  const seenLabels = { all: 'Все пользователи', contacts: 'Только контакты', nobody: 'Никто' };
+  const accRows = [
+    mkRow(rw('E-mail аккаунта', S.email || 'Не подтверждён', S.authenticated ? '<span class="ok">Аккаунт</span>' : key('authOpen', 'Войти', 'hi sm')), 'email почта вход аккаунт'),
+    mkRow(`<div class="fgrid"><label class="fg"><span>Юзернейм</span><input id="s-handle" type="text" maxlength="32" value="${esc(S.handle)}" placeholder="@username"></label></div>${key('saveProfile', 'Сохранить профиль', 'sm')}`, 'юзернейм имя профиля'),
+    ...(CtrlLive.enabled ? (S.email?[mkRow(rw('Пароль аккаунта','',key('cloudPassword','Изменить','sm')),'пароль')]:[]) : [mkRow(rw('Облачный пароль', S.cloudPasswordSet ? 'Дополнительная защита включена' : 'Не настроен', key('cloudPassword', S.cloudPasswordSet ? 'Изменить' : 'Создать', 'sm')), 'облачный пароль дополнительная защита')]),
+    mkRow(rw('Внутренний кошелёк', S.walletBalance === null ? 'Баланс загрузится с сервера' : `${S.walletBalance.toLocaleString('ru-RU')} TAP`, key('tab', 'Открыть', 'sm', 'data-id="wallet"')), 'кошелёк wallet tap'),
+    mkRow(rw('Баланс Кликов', S.clicks === null ? 'Загрузится после входа' : `${S.clicks.toLocaleString('ru-RU')} Кликов`, key('buyclk', 'Пополнить', 'hi sm')), 'клики баланс пополнить'),
+    mkRow(rw('Тарифный план', S.premium ? 'CTRL Premium активен · 2 ГБ, 20 каналов' : 'CTRL Free · 700 МБ, 10 каналов', key('prem', S.premium ? 'Управлять' : 'Узнать о Premium', 'sm')), 'тариф free premium план')
+  ];
+  const privRows = [
+    mkRow(rw('Время последнего визита', `Сейчас: ${seenLabels[S.seenMode]}`, `<select class="sel" data-a="seen" aria-label="Кто видит время визита"><option value="all" ${S.seenMode === 'all' ? 'selected' : ''}>Все</option><option value="contacts" ${S.seenMode === 'contacts' ? 'selected' : ''}>Контакты</option><option value="nobody" ${S.seenMode === 'nobody' ? 'selected' : ''}>Никто</option></select>`), 'визит сеть онлайн приватность'),
+    mkRow(mkRowOp('rec', 'Отметки о прочтении', 'Показывать двойные галочки собеседникам'), 'отметки прочтение галочки'),
+    mkRow(mkRowSw('bal', S.showBal, 'Баланс TAP в профиле', 'Отображать баланс кошелька публично'), 'баланс tap профиль'),
+    mkRow(S.premium ? mkRowOp('hw', 'Блокировка по устройству', 'Новые аккаунты нарушителя не смогут вам писать') : rw('Блокировка по устройству', 'Защита от твинков после блокировки · только в Premium', key('prem', 'Включить Premium', 'hi sm')), 'блокировка устройство нарушитель premium'),
+    ...(!CtrlLive.enabled ? [mkRow(rw('Сквозное шифрование', 'Статус появится после подключения и проверки E2EE-сервера', '<span class="mu">Не подключено</span>'), 'шифрование e2ee личные чаты')]:[]),
+    mkRow(rw('Чёрный список', blocked.length ? `Заблокировано: ${blocked.length}` : 'Список пуст', blocked.length ? key('unblockall', 'Снять все', 'sm') : ''), 'черный список блокировка заблокированные')
+  ];
+  if (blocked.length) {
+    privRows.push(mkRow(`<div class="blk-list">${blocked.map(c => `<div class="blk-item"><span><b>${esc(c.name)}</b> <span class="mu">(${esc(c.sub)})</span></span>${key('unblock', 'Разблокировать', 'sm', `data-id="${c.id}"`)}</div>`).join('')}</div>`, 'черный список разблокировать ' + blocked.map(c => c.name).join(' ')));
+  }
+  const uiRows = [
+    mkRow(rw('Язык интерфейса', 'Выберите язык приложения', `<select class="sel" data-a="language" aria-label="Язык интерфейса"><option value="ru" ${S.language === 'ru' ? 'selected' : ''}>Русский</option><option value="en" ${S.language === 'en' ? 'selected' : ''}>English</option></select>`), 'язык language русский english'),
+    mkRow(rw('Тема интерфейса', `Сейчас: ${S.colorMode === 'dark' ? 'тёмная' : 'светлая'}`, key('toggleTheme', S.colorMode === 'dark' ? 'Светлая' : 'Тёмная', 'sm')), 'тема интерфейс интерфейса светлая тёмная dark light theme interface'),
+    mkRow(rw('Цвета из изображения', S.customThemeColor ? 'Палитра применена к интерфейсу' : 'Загрузите изображение для подбора акцентного цвета', `${key('pickImage', 'Загрузить тему', 'sm', 'data-id="theme"')}${S.customThemeColor ? key('clearImage', 'Сбросить', 'sm', 'data-id="theme"') : ''}`), 'тема изображение цвет палитра'),
+    mkRow(rw('Размер текста в чате', 'Влияет на сообщения в диалогах', `<select class="sel" data-a="fsize" aria-label="Размер текста"><option value="sm" ${S.fontSize === 'sm' ? 'selected' : ''}>Мелкий</option><option value="md" ${S.fontSize === 'md' ? 'selected' : ''}>Обычный</option><option value="lg" ${S.fontSize === 'lg' ? 'selected' : ''}>Крупный</option></select>`), 'размер шрифт текст чат'),
+    mkRow(mkRowOp('compact', 'Компактный список чатов', 'Уменьшает высоту строк и аватаров в левой колонке'), 'компактный список чатов плотность'),
+    mkRow(mkRowSw('snd', S.sound, 'Щелчок клавиши Ctrl', 'Звуковой отклик при нажатии кнопки Ctrl'), 'звук щелчок клавиша ctrl'),
+    mkRow(mkRowOp('enterSend', 'Отправка по Enter', 'Отправлять сообщение по клавише Enter'), 'enter отправка сообщение'),
+    mkRow(rw('Сброс параметров интерфейса', 'Вернуть шрифт, плотность, язык и тему по умолчанию', key('resetui', 'Сбросить', 'sm')), 'сброс интерфейс по умолчанию')
+  ];
+  const ntfRows = [
+    mkRow(mkRowOp('ntf', 'Личные сообщения', 'Уведомления о новых сообщениях в личке'), 'уведомления личные сообщения'),
+    mkRow(mkRowOp('grp', 'Группы и каналы', 'Оповещения об упоминаниях и новых постах'), 'уведомления группы каналы'),
+    mkRow(mkRowOp('pre', 'Предпросмотр текста', 'Показывать текст сообщения во всплывающем окне'), 'уведомления текст предпросмотр'),
+    mkRow(mkRowOp('mkt', 'События CTRL Market', 'Ставки, продажи и перебитые лоты за TAP'), 'уведомления маркет ставки продажи')
+  ];
+  const dataRows = [
+    mkRow(rw('Лимит размера файла', S.premium ? 'До 2 ГБ на файл' : 'До 700 МБ на файл'), 'размер файла лимит гб мб'),
+    mkRow(rw('Лимит каналов', S.premium ? 'До 20 каналов' : 'До 10 каналов'), 'лимит каналы подписки'),
+    mkRow(mkRowOp('auto', 'Автозагрузка медиа', 'Автоматически загружать фото и голосовые'), 'автозагрузка медиа фото голосовые'),
+    mkRow(rw('Локальный кэш', S.cacheMb === null ? 'Данные появятся после подключения хранилища' : S.cacheMb > 0 ? `Занято ${S.cacheMb} МБ` : 'Кэш очищен (0 МБ)', S.cacheMb > 0 ? key('clr', 'Очистить', 'sm') : ''), 'кэш память очистить'),
+    ...sessions.map(x => mkRow(rw(esc(x.n), x.cur ? 'Текущее устройство' : 'Активный сеанс', x.cur ? '<span class="ok">Этот сеанс</span>' : key('askkill', 'Завершить', 'sm', `data-id="${x.id}"`)), 'сеансы устройства вход ' + x.n)),
+    ...(!sessions.length ? [mkRow(rw('Активные сеансы', 'Список загрузится после подключения аккаунта к серверу'), 'сеансы устройства вход')] : [])
+  ];
+  const helpRows = [
+    mkRow(rw('Служба поддержки', 'support@ctrl-messenger.com', '<a href="mailto:support@ctrl-messenger.com">Написать</a>'), 'поддержка email помощь'),
+    mkRow(rw('Версия интерфейса', 'Адаптируется под размер экрана автоматически', '<span class="mu">CTRL</span>'), 'версия адаптивный экран')
+  ];
+  const delRows = [
+    mkRow(`<p class="mu">Удаление сотрёт аккаунт, историю переписок, ключи и привязанные данные без возможности восстановления.</p>${key('askdel', 'Удалить аккаунт', 'dn')}`, 'удалить аккаунт удаление')
+  ];
+
+  const navHtml = setCats.map(([id, lbl]) => `<button class="chip ${S.setCat === id ? 'on' : ''}" data-a="setcat" data-id="${id}">${lbl}</button>`).join('');
+  const body = [
+    sec('acc', 'Аккаунт', accRows, S.premium ? 'Premium' : 'Free'),
+    sec('priv', 'Приватность и безопасность', privRows),
+    sec('ui', 'Интерфейс и звук', uiRows),
+    sec('ntf', 'Уведомления', ntfRows),
+    sec('data', 'Данные и сеансы', dataRows),
+    sec('help', 'Помощь и система', helpRows),
+    S.setCat === 'all' || S.setCat === 'data' ? `<section class="card" id="sec-del"><div class="chd"><h2>Опасная зона</h2></div>${delRows.map(r => r.html).join('')}</section>` : ''
+  ].filter(Boolean).join('');
+
+  return `<div class="pg"><input class="upload-input" id="upload-theme" type="file" accept="image/png,image/jpeg,image/webp${S.premium && id.endsWith('Banner')?',image/gif':''}" data-upload="theme"><div class="settings-heading">${key('tab', '← Профиль', 'sm', 'data-id="me"')}<h1>Настройки</h1></div>
+<div class="sbar"><input id="ssrc" type="search" placeholder="Поиск по настройкам…" value="${esc(S.setQ)}"><div class="snav">${navHtml}</div><span class="swipe-hint">Проведите в сторону, чтобы увидеть остальные разделы →</span></div>
+${body || '<div class="card"><p class="mu">По вашему запросу ничего не найдено.</p></div>'}</div>`;
+}
+function mkRowSw(a, on, label, hint, id = '') {
+  return mkRow(sw(a, on, label, hint, id), label + ' ' + hint);
+}
+function mkRowOp(k, label, hint) {
+  return mkRow(op(k, label, hint), label + ' ' + hint);
+}
+function giftsHtml() {
+  const cheapestGift = Math.min(...giftDefinitions.map(gift => gift.price));
+  const clicks = S.previewMode ? S.demoClicks : S.clicks;
+  const locale = S.language === 'en' ? 'en-GB' : 'ru-RU';
+  const clickUnit = S.language === 'en' ? 'Clicks' : 'Кликов';
+  const canPurchase = S.previewMode
+    ? S.demoClicks >= cheapestGift
+    : S.authenticated && S.giftsLoaded && S.clicks !== null && S.clicks >= cheapestGift;
+  const balanceLabel = S.previewMode
+    ? `${S.language === 'en' ? 'Demo balance:' : 'Демо-баланс:'} ${S.demoClicks.toLocaleString(locale)} ${S.language === 'en' ? 'Clicks (not real)' : 'Кликов (не настоящий)'}`
+    : S.giftsLoaded && clicks !== null
+      ? `${S.language === 'en' ? 'Balance:' : 'Баланс:'} ${clicks.toLocaleString(locale)} ${clickUnit}`
+      : translate('Баланс Кликов загрузится после входа');
+  const status = S.previewMode
+    ? S.language === 'en' ? 'Only the demo balance changes in preview mode.' : 'В режиме предпросмотра меняется только тестовый баланс.'
+    : !S.giftsLoaded
+      ? translate('Войдите, чтобы загрузить баланс и купить подарок.')
+      : clicks !== null && clicks < cheapestGift
+        ? translate('Недостаточно Кликов для покупки.')
+        : '';
+  const cards = giftDefinitions.map(gift => {
+    const art = gift.type === 'tgs'
+      ? `<div id="gift-animation" role="img" aria-label="Анимированный подарок"></div>`
+      : `<img src="./${window.matchMedia('(prefers-reduced-motion: reduce)').matches ? gift.poster : gift.file}" alt="Анимированный подарок">`;
+    const owned = S.previewMode || S.giftsLoaded ? S.giftsOwned[gift.id] ?? 0 : '—';
+    const disabled = !canPurchase || S.giftPurchasePending;
+    return `<article class="card gift-card"><div class="gift-art">${art}</div><div class="gift-info">${gift.type === 'nft' ? `<h2>${esc(gift.name)}</h2>` : ''}<strong class="gift-price">${gift.price} ${clickUnit}</strong><span class="gift-count">${S.language === 'en' ? 'Owned:' : 'У вас:'} ${owned}</span>${CtrlLive.enabled && owned>0 ? key('upgradeGift','Выпустить NFT · 25 Кликов','sm',`data-id="${gift.id}"`) : ''}${key('buyGift', S.giftPurchasePending ? (S.language === 'en' ? 'Buying…' : 'Покупка…') : translate('Купить'), 'hi', `data-id="${gift.id}" ${disabled ? 'disabled' : ''}`)}</div></article>`;
+  }).join('');
+  return `<div class="pg wide"><div class="profile-heading">${key('tab', '← Профиль', 'sm', 'data-id="me"')}<h1>Подарки</h1></div>
+<div class="gift-grid">${cards}</div><div class="gift-footer"><span>${balanceLabel}</span>${status ? `<span>${status}</span>` : ''}</div></div>`;
+}
+async function loadGiftAnimation() {
+  const container = document.getElementById('gift-animation');
+  if (!container || container.dataset.loading) return;
+  container.dataset.loading='true';
+  try {
+    if (!window.lottie) throw new Error('Lottie player did not load.');
+    if (!('DecompressionStream' in window)) throw new Error('Gzip decompression is unavailable.');
+    const response = await fetch('./assets/gifts/first-gift/animation.tgs');
+    if (!response.ok) throw new Error(`TGS request failed with status ${response.status}.`);
+    const compressedData = await response.arrayBuffer();
+    const stream = new Blob([compressedData]).stream().pipeThrough(new DecompressionStream('gzip'));
+    const animationData = await new Response(stream).json();
+    if (!container.isConnected) return;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    giftAnimation = window.lottie.loadAnimation({
+      container,
+      renderer: 'svg',
+      loop: !reducedMotion,
+      autoplay: !reducedMotion,
+      animationData
+    });
+    if (reducedMotion) {
+      giftAnimation.addEventListener('DOMLoaded', () => giftAnimation.goToAndStop(0, true), { once: true });
+    }
+  } catch (error) {
+    if (!container.isConnected) return;
+    console.error('Unable to load the CTRL gift animation.', error);
+    container.textContent = 'Анимация подарка не загрузилась.';
+    container.classList.add('gift-error');
+    toast('Не удалось загрузить анимацию подарка.');
+  }
+}
+function loadGiftImages() {
+  document.querySelectorAll('.gift-art img').forEach(image => {
+    if(watchedGiftImages.has(image))return;
+    watchedGiftImages.add(image);
+    image.addEventListener('error', () => {
+      if (!image.isConnected) return;
+      const container = image.parentElement;
+      container.textContent = `Анимация «${image.alt}» не поддерживается или не загрузилась.`;
+      container.classList.add('gift-error');
+    }, { once: true });
+  });
+}
+function marketHtml() {
+  if(CtrlLive.enabled)return `<div class="pg wide"><h1>Маркет</h1><section class="card"><h2>Номера, юзернеймы и подарки</h2><p class="mu">Цена и остаток TAP загружаются из TON.</p>${key("tonShop","Открыть маркет","hi")}</section></div>`;
+  const rows = items.filter(i => i.k === S.mk && (S.mf === 'all' || i.st === S.mf));
+  const lb = { auction: 'Аукцион', sale: 'Продажа', sold: 'Продано' };
+  const tabs = ['num', 'usr'].map(k => `<button class="tb ${S.mk === k ? 'on' : ''}" data-a="mk" data-id="${k}">${k === 'num' ? 'Номера' : 'Юзернеймы'}</button>`).join('');
+  const fl = ['all', 'auction', 'sale', 'sold'].map((f, i) => `<button class="chip ${S.mf === f ? 'on' : ''}" data-a="mf" data-id="${f}">${['Все', 'Аукцион', 'Продажа', 'Продано'][i]}</button>`).join('');
+  const body = rows.map(i => { const x = items.indexOf(i); return `<div class="mr"><b data-no-translate>${esc(i.n)}</b><span class="stt s-${i.st}">${lb[i.st]}</span><span class="pr">${i.p.toLocaleString(S.language === 'en' ? 'en-GB' : 'ru-RU')} TAP</span><span class="mu">${i.end ? (S.language === 'en' ? 'ends ' : 'осталось ') + i.end : ''}</span>${i.st === 'auction' ? key('bid', 'Ставка +5%', '', `data-id="${x}"`) : i.st === 'sale' ? key('mbuy', 'Купить', 'hi', `data-id="${x}"`) : '<span></span>'}</div>`; }).join('');
+  return `<div class="pg wide"><div class="mh"><div><h1>CTRL Market</h1><p class="mu">Номера и юзернеймы за TAP. Номера +999 выдаёт только команда.</p></div><div class="tp"><span class="mu">Ваш баланс</span><strong>${S.walletBalance === null ? '—' : S.walletBalance.toLocaleString('ru-RU')} TAP</strong></div></div><div class="tbs">${tabs}</div><div class="fl">${fl}</div><div class="card tbl">${body || '<p class="mu">Лотов пока нет. Список появится после подключения маркета к серверу.</p>'}</div></div>`;
+}
+function feedHtml() {
+  return `<div class="pg"><header class="page-title"><h1>Лента</h1>${CtrlLive.enabled?iconKey('composePost','compose','Новая публикация'):''}</header>${CtrlLive.enabled?key('community',svg('group',17)+'Каналы и истории','feed-rooms'):''}${posts.length?posts.map(postHtml).join(''):'<div class="section-empty">'+svg('feed',27)+'<h2>Пока нет публикаций</h2>'+key('composePost','Написать пост','hi')+'</div>'}</div>`;
+}
+function authGateHtml() {
+  if (S.authMode === 'verify') {
+    return `<div class="auth-page"><section class="card auth-card" aria-label="Подтверждение регистрации"><h1>Подтвердите e-mail</h1><p class="mu">Введите код, отправленный на ${esc(S.email)}.</p><form class="auth-form" data-form="verify"><label>Код подтверждения<input class="in" name="code" inputmode="numeric" autocomplete="one-time-code" minlength="6" maxlength="8" required></label><div class="ac"><button class="key" type="button" data-a="authMode" data-id="register">Изменить e-mail</button><button class="key hi" type="submit">Подтвердить</button></div></form><button class="key sm" data-a="resendCode">Отправить код повторно</button></section></div>`;
+  }
+  const registering = S.authMode === 'register';
+  return `<div class="auth-page"><section class="card auth-card" aria-label="${registering ? 'Регистрация' : 'Вход'}"><h1>${registering ? 'Создать аккаунт CTRL' : 'Войти в CTRL'}</h1><p class="mu">${registering ? 'Зарегистрируйтесь, чтобы открыть мессенджер.' : 'Войдите в существующий аккаунт.'}</p><div class="auth-tabs">${key('authMode', 'Войти', S.authMode === 'login' ? 'hi' : '', 'data-id="login"')}${key('authMode', 'Регистрация', registering ? 'hi' : '', 'data-id="register"')}</div><form class="auth-form" data-form="${registering ? 'register' : 'login'}"><label>E-mail<input class="in" name="email" type="email" autocomplete="email" value="${esc(S.email)}" required></label><label>Пароль<input class="in" name="password" type="password" autocomplete="${registering ? 'new-password' : 'current-password'}" minlength="10" required></label>${registering ? '<p class="mu">Для регистрации используйте адрес @gmail.com. Код будет отправлен после подключения почтового сервиса.</p>' : ''}<button class="key hi" type="submit">${registering ? 'Зарегистрироваться' : 'Войти'}</button></form><p class="mu">Можно открыть интерфейс в режиме предпросмотра; серверные функции работать не будут.</p>${key('preview', 'Тестировать интерфейс')}</section></div>`;
+}
+function modalHtml() {
+  const c = cur();
+  if (S.modal === 'auth') {
+    if (S.authMode === 'verify') return `<div class="mod" data-a="close"><div class="dlg" role="dialog" aria-modal="true" aria-label="Подтверждение e-mail" data-stop><h2>Проверьте почту</h2><p class="mu">Введите код подтверждения, отправленный на ${esc(S.email)}.</p><form class="auth-form" data-form="verify"><label>Код из письма<input class="in" name="code" inputmode="numeric" autocomplete="one-time-code" minlength="6" maxlength="8" required></label><div class="ac"><button class="key" type="button" data-a="close">Отмена</button><button class="key hi" type="submit">Подтвердить</button></div></form><button class="key sm" data-a="resendCode">Отправить код повторно</button></div></div>`;
+    const registering = S.authMode === 'register';
+    return `<div class="mod" data-a="close"><div class="dlg" role="dialog" aria-modal="true" aria-label="${registering ? 'Регистрация' : 'Вход'}" data-stop><h2>${registering ? 'Создать аккаунт' : 'Войти в CTRL'}</h2><div class="auth-tabs">${key('authMode', 'Войти', S.authMode === 'login' ? 'hi' : '', 'data-id="login"')}${key('authMode', 'Регистрация', registering ? 'hi' : '', 'data-id="register"')}</div><form class="auth-form" data-form="${registering ? 'register' : 'login'}"><label>E-mail<input class="in" name="email" type="email" autocomplete="email" value="${esc(S.email)}" required></label><label>Пароль<input class="in" name="password" type="password" autocomplete="${registering ? 'new-password' : 'current-password'}" minlength="10" required></label><p class="mu">Код подтверждения придёт на e-mail после настройки почтового сервиса.</p><div class="ac"><button class="key" type="button" data-a="close">Отмена</button><button class="key hi" type="submit">${registering ? 'Продолжить' : 'Войти'}</button></div></form></div></div>`;
+  }
+  if (S.modal === 'cloudPassword')
+    return `<div class="mod" data-a="close"><div class="dlg" role="dialog" aria-modal="true" aria-label="Облачный пароль" data-stop><h2>${S.cloudPasswordSet ? 'Изменить облачный пароль' : 'Создать облачный пароль'}</h2><p class="mu">Дополнительный пароль для защиты аккаунта при входе с нового устройства.</p><form class="auth-form" data-form="cloudPassword">${S.cloudPasswordSet ? '<label>Текущий пароль<input class="in" name="currentPassword" type="password" autocomplete="current-password" required></label>' : ''}<label>Новый пароль<input class="in" name="newPassword" type="password" autocomplete="new-password" minlength="10" required></label><label>Повторите пароль<input class="in" name="confirmPassword" type="password" autocomplete="new-password" minlength="10" required></label><div class="ac"><button class="key" type="button" data-a="close">Отмена</button><button class="key hi" type="submit">Сохранить</button></div></form></div></div>`;
+  if (S.modal === 'newchat')
+    return `<div class="mod" data-a="close"><div class="dlg" role="dialog" aria-modal="true" aria-label="Новый чат" data-stop><h2>Новый чат</h2><form class="auth-form" data-form="newchat"><label>Юзернейм собеседника<input class="in" name="handle" type="text" autocomplete="off" placeholder="@username" required></label><div class="ac"><button class="key" type="button" data-a="close">Отмена</button><button class="key hi" type="submit">Продолжить</button></div></form></div></div>`;
+  if (S.modal === 'walletTransfer' || S.modal === 'walletDeposit') {
+    const transfer = S.modal === 'walletTransfer';
+    return `<div class="mod" data-a="close"><div class="dlg" role="dialog" aria-modal="true" aria-label="${transfer ? 'Перевести TAP' : 'Пополнить кошелёк'}" data-stop><h2>${transfer ? 'Перевести TAP' : 'Пополнить кошелёк'}</h2><form class="auth-form" data-form="${transfer ? 'walletTransfer' : 'walletDeposit'}">${transfer ? '<label>Юзернейм получателя<input class="in" name="recipient" type="text" placeholder="@username" required></label>' : ''}<label>Сумма TAP<input class="in" name="amount" type="number" min="1" step="1" required></label><div class="ac"><button class="key" type="button" data-a="close">Отмена</button><button class="key hi" type="submit">${transfer ? 'Перевести' : 'Создать счёт'}</button></div></form></div></div>`;
+  }
+  if (S.modal === 'report')
+    return c ? `<div class="mod" data-a="close"><div class="dlg" role="dialog" aria-modal="true" aria-label="Жалоба" data-stop><h2>Пожаловаться на ${esc(c.name)}</h2><p class="mu">К жалобе будут приложены последние пять сообщений этого чата.</p>${reasons.map(r => `<button class="opt ${S.reason === r ? 'on' : ''}" data-a="reason" data-id="${r}">${r}</button>`).join('')}<div class="ac">${key('close', 'Отмена')}${key('sendrep', 'Отправить жалобу', 'hi')}</div></div></div>` : '';
+  if (S.modal === 'del')
+    return `<div class="mod" data-a="close"><div class="dlg" role="dialog" aria-modal="true" aria-label="Удаление" data-stop><h2>Удалить аккаунт?</h2><p class="mu">Все данные будут стёрты безвозвратно.</p><div class="ac">${key('close', 'Оставить')}${key('dodel', 'Удалить навсегда', 'dn')}</div></div></div>`;
+  if (S.modal === 'kill') {
+    const s = sessions.find(x => x.id === S.pendingKill);
+    return `<div class="mod" data-a="close"><div class="dlg" role="dialog" aria-modal="true" aria-label="Завершить сеанс" data-stop><h2>Завершить сеанс?</h2><p class="mu">Устройство «${esc(s?.n ?? '')}» будет отключено от аккаунта CTRL.</p><div class="ac">${key('close', 'Отмена')}${key('kill', 'Завершить', 'dn', `data-id="${esc(S.pendingKill)}"`)}</div></div></div>`;
+  }
+  if (S.modal === 'buy')
+    return `<div class="mod" data-a="close"><div class="dlg" role="dialog" aria-modal="true" aria-label="Пополнить Клики" data-stop><h2>Купить Клики</h2><p class="mu">Пакеты появятся после подключения платёжного провайдера.</p><div class="ac">${key('close', 'Закрыть')}</div></div></div>`;
+  return '';
+}
+function render() {
+  const app = document.getElementById('app');
+  const main = document.getElementById('main');
+  if (!main) return;
+  let html;
+  if(giftAnimation && S.tab!=='gifts'){giftAnimation.destroy();giftAnimation=null;}
+  document.querySelectorAll('.rail [data-tab]').forEach(b => {const active=b.dataset.tab===S.tab;b.classList.toggle('on',active);if(active)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});
+  if (!S.authenticated && !S.previewMode) {
+    app.classList.add('auth-required');
+    CtrlMotion.frame(main,CtrlLive.enabled ? CtrlLive.authHtml() : authGateHtml(),CtrlLive.enabled && S.modal ? CtrlLive.modalContent() : '',{page:'auth-'+S.authMode,chat:'',modal:S.modal});
+    localizeDom(main);localizeDom(document.getElementById('modal'));
+    return;
+  }
+  app.classList.remove('auth-required');
+  if (S.tab === 'chats') html = `<div class="chats ${S.open ? 'open' : ''} ${S.opt.compact ? 'compact' : ''}"><aside class="cl"><header class="inbox-head"><h1>Чаты</h1>${iconKey('newchat','compose','Новый чат')}</header><div class="sr">${svg('search',16)}<input id="q" type="search" aria-label="Поиск по чатам" placeholder="Поиск" value="${esc(S.q)}"><kbd>Ctrl K</kbd></div><div class="fl">${[['all','Все'],['unread','Непрочитанные']].map(([k,label])=>`<button class="chip ${S.filter===k?'on':''}" aria-pressed="${S.filter===k}" data-a="filter" data-id="${k}">${label}</button>`).join('')}</div><p id="inbox-state" role="status" ${S.inboxOffline?'':'hidden'}>Восстанавливаем связь…</p><div id="list">${listHtml()}</div>${CtrlLive.enabled?key('community',svg('group',17)+'Группы и каналы','rooms-link'):''}</aside><section class="cw">${chatHtml()}</section></div>`;
+  else html = ({ feed: feedHtml, music: musicHtml, market: marketHtml, me: meHtml, set: setHtml, wallet: walletHtml, gifts: giftsHtml })[S.tab]();
+  CtrlMotion.frame(main,html,CtrlLive.enabled ? CtrlLive.modalContent() : modalHtml(),{page:S.tab,chat:S.tab==='chats' ? S.cur : '',modal:S.modal});
+  localizeDom(main);
+  if (S.tab === 'gifts') {
+    loadGiftAnimation();
+    loadGiftImages();
+  }
+  localizeDom(document.getElementById('modal'));
+}
+function applyProfile(user) {
+        if (!user || typeof user.email !== 'string') throw new Error('Сервер вернул неполные данные профиля.');
+        S.email = user.email;
+        S.handle = typeof user.handle === 'string' ? user.handle : '';
+        S.bio = typeof user.bio === 'string' ? user.bio : '';
+        S.cloudPasswordSet = Boolean(user.cloudPasswordSet);
+        S.premium = Boolean(user.premium);
+        S.clicks = user.clicks !== null && user.clicks !== undefined && Number.isFinite(Number(user.clicks)) ? Number(user.clicks) : null;
+        S.walletBalance = user.walletBalance !== null && user.walletBalance !== undefined && Number.isFinite(Number(user.walletBalance)) ? Number(user.walletBalance) : null;
+        S.authenticated = true;
+      }
+      async function loadProfile() {
+        const result = await apiRequest('/me');
+        applyProfile(result.user);
+        return result.user;
+      }
+      async function loadChats() {
+        if(CtrlLive.enabled)return CtrlLive.sync();
+        const result = await apiRequest('/chats');
+        if (!Array.isArray(result.chats)) throw new Error('Список чатов в ответе сервера имеет неверный формат.');
+        const received = result.chats.map(chat => {
+          if (!chat || chat.id === undefined || typeof chat.name !== 'string') throw new Error('Сервер вернул чат без обязательных полей.');
+          const messages = Array.isArray(chat.messages) ? chat.messages : [];
+          return {
+            id: String(chat.id),
+            name: chat.name,
+            kind: ['dm', 'group', 'channel'].includes(chat.kind) ? chat.kind : 'dm',
+            ini: chat.name.trim()[0] || '?',
+            sub: typeof chat.subtitle === 'string' ? chat.subtitle : '',
+            unread: Number(chat.unread) || 0,
+            sys: Boolean(chat.system),
+            ok: Boolean(chat.verified),
+            msgs: messages.map(message => ({
+              id: message.id,
+              mine: Boolean(message.mine),
+              text: String(message.text ?? ''),
+              t: message.createdAt ? new Date(message.createdAt).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) : '',
+              st: message.status || 'read',
+              re: false
+            }))
+          };
+        });
+        const systemNames = new Set(systemChats.map(chat => chat.name.toLocaleLowerCase('en')));
+        const mergedSystem = systemChats.map(template => {
+          const serverChat = received.find(chat => chat.sys && chat.name.toLocaleLowerCase('en') === template.name.toLocaleLowerCase('en'));
+          return serverChat ? { ...template, ...serverChat, sub: '', unread: 0, msgs: [] } : { ...template, msgs: [] };
+        });
+        const regularChats = received.filter(chat => !(chat.sys && systemNames.has(chat.name.toLocaleLowerCase('en'))));
+        chats.splice(0, chats.length, ...mergedSystem, ...regularChats);
+        S.cur = chats[0]?.id ?? '';
+        S.open = false;
+        render();
+      }
+      async function loadWallet() {
+        const result = await apiRequest('/wallet');
+        if (result.balance === null || result.balance === undefined || !Number.isFinite(Number(result.balance))) throw new Error('Сервер вернул некорректный баланс кошелька.');
+        S.walletBalance = Number(result.balance);
+        S.walletData = { address: result.address, transactions: Array.isArray(result.transactions) ? result.transactions : [] };
+        render();
+      }
+      async function loadExchangeRates() {
+        S.exchangeRatesLoading = true;
+        S.exchangeRatesError = '';
+        render();
+        try {
+          const response = await fetch('/api/exchange-rates', { headers: { Accept: 'application/json' } });
+          if (!response.ok) throw new Error(`Exchange-rate API returned HTTP ${response.status}.`);
+          const result = await response.json();
+          if (!result || result.quoteCurrency !== 'RUB' || !Array.isArray(result.rates) ||
+              !Number.isFinite(Date.parse(result.updatedAt)) ||
+              !['USD', 'EUR'].every(code => result.rates.some(rate => rate.currencyCode === code && Number.isFinite(Number(rate.rate)) && Number(rate.rate) > 0))) {
+            throw new Error('Exchange-rate API returned invalid data.');
+          }
+          S.exchangeRates = result;
+        } catch (error) {
+          console.error('Unable to load public exchange rates.', error);
+          S.exchangeRates = null;
+          S.exchangeRatesError = 'Справочные курсы временно недоступны.';
+        } finally {
+          S.exchangeRatesLoading = false;
+          if (S.tab === 'wallet') render();
+        }
+      }
+      async function loadTabData(tab) {
+        if(CtrlLive.enabled && tab==='wallet'){await CtrlWallet.refresh();return;}
+        if(CtrlLive.enabled && tab==='market')return;
+        if(CtrlLive.enabled && tab==='set'){const raw=await CtrlLive.api('/me/sessions');sessions=raw.map(x=>({id:x.id,cur:!!x.cur,n:x.cur?'Это устройство':'Сеанс до '+new Date(x.expires*1000).toLocaleDateString('ru')}));render();return;}
+        if(CtrlLive.enabled && tab==='music'){await CtrlMusic.refresh();return;}
+        if (S.previewMode) {
+          if (tab === 'wallet') await loadExchangeRates();
+          return;
+        }
+        try {
+          if (tab === 'gifts') {
+            const result = await apiRequest('/gifts');
+            const balance = Number(result.clicksBalance);
+            const items = Array.isArray(result.items) ? result.items : [];
+            const owned = {};
+            for (const gift of giftDefinitions) {
+              const item = items.find(candidate => candidate.id === gift.id);
+              if (!item || Number(item.price) !== gift.price || !Number.isSafeInteger(Number(item.owned))) {
+                throw new Error('Сервер вернул некорректный каталог подарков или баланс Кликов.');
+              }
+              owned[gift.id] = Number(item.owned);
+            }
+            if (!Number.isSafeInteger(balance)) {
+              throw new Error('Сервер вернул некорректный каталог подарков или баланс Кликов.');
+            }
+            S.clicks = balance;
+            S.giftsOwned = owned;
+            S.giftsLoaded = true;
+            render();
+          } else if (tab === 'wallet') {
+            if (S.authenticated) await loadWallet();
+            await loadExchangeRates();
+          } else if (tab === 'market') {
+            const result = await apiRequest(`/market/items?category=${encodeURIComponent(S.mk)}`);
+            if (!Array.isArray(result.items)) throw new Error('Сервер вернул некорректный список лотов.');
+            items.splice(0, items.length, ...result.items.map(item => ({ id: item.id, n: item.name, k: item.category, st: item.status, p: Number(item.price), end: item.endsAt ? new Date(item.endsAt).toLocaleString('ru-RU') : '' })));
+            render();
+          } else if (tab === 'feed') {
+            const result = await apiRequest('/feed');
+            if (!Array.isArray(result.posts)) throw new Error('Сервер вернул некорректную ленту.');
+            posts.splice(0, posts.length, ...result.posts);
+            render();
+          } else if (tab === 'music') {
+            const result = await apiRequest('/music/tracks');
+            if (!Array.isArray(result.tracks)) throw new Error('Сервер вернул некорректный список треков.');
+            tracks.splice(0, tracks.length, ...result.tracks.map(track => ({ t: track.title, a: track.artist, d: Number(track.durationSeconds) })));
+            render();
+          }
+        } catch (error) {
+          showApiError(error);
+        }
+      }
+      async function submitForm(form) {
+        if(CtrlLive.enabled && await CtrlLive.form(form))return;
+        const values = Object.fromEntries(new FormData(form).entries());
+        try {
+          if (form.dataset.form === 'register') {
+            const email = String(values.email).trim().toLowerCase();
+            if (!/^[^@\s]+@gmail\.com$/i.test(email)) throw new Error('Для регистрации используйте адрес @gmail.com.');
+            S.email = email;
+            const result = await apiRequest('/auth/register', { method: 'POST', body: { email, password: values.password } });
+            S.challengeId = String(result.challengeId || '');
+            S.authMode = 'verify';
+            render();
+            toast('Код отправлен на почту.');
+          } else if (form.dataset.form === 'verify') {
+            await apiRequest('/auth/verify-email', { method: 'POST', body: { email: S.email, code: String(values.code).trim(), challengeId: S.challengeId } });
+            S.modal = '';
+            await loadProfile();
+            render();
+            await loadChats();
+            await loadWallet();
+            toast('E-mail подтверждён.');
+          } else if (form.dataset.form === 'login') {
+            const email = String(values.email).trim().toLowerCase();
+            await apiRequest('/auth/login', { method: 'POST', body: { email, password: values.password } });
+            S.email = email;
+            S.modal = '';
+            await loadProfile();
+            render();
+            await loadChats();
+            await loadWallet();
+            toast('Вход выполнен.');
+          } else if (form.dataset.form === 'cloudPassword') {
+            if (values.newPassword !== values.confirmPassword) throw new Error('Пароли не совпадают.');
+            await apiRequest('/me/cloud-password', { method: 'PUT', body: { currentPassword: values.currentPassword || undefined, newPassword: values.newPassword } });
+            S.cloudPasswordSet = true;
+            S.modal = '';
+            render();
+            toast('Облачный пароль обновлён.');
+          } else if (form.dataset.form === 'newchat') {
+            if (!S.authenticated) throw new Error('Войдите, чтобы начать чат.');
+            const result = await apiRequest('/chats', { method: 'POST', body: { handle: String(values.handle).trim() } });
+            const chat = result.chat;
+            if (!chat || chat.id === undefined || typeof chat.name !== 'string') throw new Error('Сервер не вернул созданный чат.');
+            chats.push({ id: String(chat.id), name: chat.name, kind: chat.kind || 'dm', ini: chat.name[0] || '?', sub: chat.subtitle || '', unread: 0, msgs: [] });
+            S.cur = String(chat.id); S.open = true; S.modal = '';
+            render();
+          } else if (form.dataset.form === 'walletTransfer') {
+            await apiRequest('/wallet/transfers', { method: 'POST', body: { recipient: String(values.recipient).trim(), amount: Number(values.amount) } });
+            S.modal = '';
+            await loadWallet();
+            toast('Перевод принят сервером.');
+          } else if (form.dataset.form === 'walletDeposit') {
+            const result = await apiRequest('/wallet/deposit-intents', { method: 'POST', body: { amount: Number(values.amount) } });
+            S.modal = '';
+            toast(result.checkoutUrl ? 'Счёт создан. Откройте платёжную ссылку в кошельке.' : 'Запрос на пополнение создан.');
+            await loadWallet();
+          }
+        } catch (error) {
+          showApiError(error);
+        }
+}
+async function send() {
+  if(CtrlLive.enabled)return CtrlLive.send();
+  const c = cur(), text = S.draft.trim();
+  if (!c || !text || c.blocked) return;
+  if (!S.authenticated) {
+    S.authMode = 'login'; S.modal = 'auth'; render(); return;
+  }
+  try {
+    const editing = Boolean(S.edit);
+    const route = `/chats/${encodeURIComponent(c.id)}/messages${editing ? `/${encodeURIComponent(S.edit)}` : ''}`;
+    const result = await apiRequest(route, { method: editing ? 'PATCH' : 'POST', body: { text } });
+    const message = result.message;
+    if (!message || message.id === undefined || typeof message.text !== 'string') throw new Error('Ответ сервера не содержит сохранённого сообщения.');
+    const saved = { id: message.id, mine: true, text: message.text, t: message.createdAt ? new Date(message.createdAt).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) : now(), st: message.status || 'sent', re: false };
+    if (editing) {
+      const index = c.msgs.findIndex(x => String(x.id) === String(S.edit));
+      if (index >= 0) c.msgs[index] = { ...c.msgs[index], ...saved, edited: true };
+      S.edit = 0;
+    } else c.msgs.push(saved);
+    S.draft = '';
+    render();
+  } catch (error) {
+    S.draft = text;
+    render();
+    showApiError(error);
+  }
+}
+function runApi(action) { action().catch(showApiError); }
+function renderNavigation() {
+  const rail = document.querySelector('.rail');
+  if (!rail) return;
+  const labels = S.language === 'en'
+    ? [['chats','Chats'],['feed','Feed'],['music','Music'],['market','Market'],['me','Profile'],['set','Settings']]
+    : [['chats','Чаты'],['feed','Лента'],['music','Музыка'],['market','Маркет'],['me','Профиль'],['set','Настройки']];
+  rail.innerHTML = labels.map(([tab, label]) => `<button class="key" data-a="tab" data-id="${tab}" data-tab="${tab}" aria-label="${label}" title="${label}">${svg(tab)}<span>${label}</span></button>`).join('');
+  const logoButton = document.querySelector('.lg-k');
+  if (logoButton) logoButton.setAttribute('aria-label', S.language === 'en' ? 'Press Ctrl to hear a click' : 'Ctrl: нажмите, чтобы услышать щелчок');
+  document.documentElement.lang = S.language;
+  document.title = S.language === 'en' ? 'CTRL — Messenger' : 'CTRL — мессенджер';
+}
+async function normalizeImage(file) {
+  if (!file || !['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
+    throw new Error('Поддерживаются только PNG, JPEG и WebP.');
+  }
+  if (file.size > 10 * 1024 * 1024) throw new Error('Размер изображения должен быть не больше 10 МБ.');
+  let bitmap;
+  try {
+    bitmap = await createImageBitmap(file);
+  } catch (error) {
+    throw new Error('Браузер не смог открыть это изображение.');
+  }
+  try {
+    const scale = Math.min(1, 512 / Math.max(bitmap.width, bitmap.height));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+    const context = canvas.getContext('2d', { willReadFrequently: true });
+    if (!context) throw new Error('Браузер не смог обработать изображение.');
+    context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
+    let red = 0, green = 0, blue = 0, count = 0;
+    for (let index = 0; index < pixels.length; index += 4) {
+      if (pixels[index + 3] < 48) continue;
+      red += pixels[index]; green += pixels[index + 1]; blue += pixels[index + 2]; count++;
+    }
+    if (!count) throw new Error('В изображении нет видимых пикселей.');
+    const hex = `#${[red, green, blue].map(channel => Math.round(channel / count).toString(16).padStart(2, '0')).join('')}`;
+    const data = canvas.toDataURL('image/webp', 0.78);
+    if (data.length > 1200000) throw new Error('Оптимизированное изображение превышает допустимый размер.');
+    return { data, color: hex };
+  } finally {
+    bitmap.close();
+  }
+}
+async function handleImageUpload(input) {
+  const target = input.dataset.upload;
+  const file = input.files?.[0];
+  if (!file) return;
+  try {
+    if ((target==='chatBanner'||(!CtrlLive.enabled && target==='profileBanner')) && !S.previewMode && !S.premium) throw new Error('Загрузка собственных баннеров доступна только с Premium.');
+    const image = CtrlLive.enabled ? await CtrlProfile.image(file,target) : await normalizeImage(file);
+    if(CtrlLive.enabled && target!=='theme')await CtrlProfile.save(target,image.data);
+    if (target === 'theme') S.customThemeColor = image.color;
+    else if (['profileAvatar', 'profileBackground', 'profileBanner', 'chatBanner'].includes(target)) S[target] = image.data;
+    else throw new Error('Неизвестный тип изображения.');
+    applyAppearance();
+    savePreferences();
+    render();
+    toast(target === 'theme' ? 'Цветовая тема обновлена.' : 'Изображение профиля обновлено.');
+  } catch (error) {
+    console.error('Unable to apply uploaded image.', error);
+    toast(error instanceof Error ? error.message : 'Не удалось обработать изображение.');
+  } finally {
+    input.value = '';
+  }
+}
+function act(a, d) {
+  if(CtrlLive.enabled && CtrlLive.action(a,d))return;
+  const id = d.id ?? '', c = cur();
+  if (a === 'tab') {
+    S.tab = id; S.menu = false; S.modal=''; render(); loadTabData(id); return;
+  }
+  switch (a) {
+    case 'preview':
+      S.previewMode = true; S.modal = ''; S.tab = 'chats'; S.open = false;
+      break;
+    case 'authOpen': S.previewMode = false; S.authMode = 'register'; S.modal = 'auth'; break;
+    case 'authMode': S.previewMode = false; S.authMode = id; break;
+    case 'resendCode':
+      runApi(async () => { await apiRequest('/auth/register/resend', { method: 'POST', body: { email: S.email, challengeId: S.challengeId } }); toast('Код отправлен повторно.'); });
+      return;
+    case 'chat': {
+      const target = chats.find(x => x.id === id);
+      if (!target) return;
+      S.cur = id; S.open = true; S.menu = false; S.edit = 0; S.draft = ''; target.unread = 0;
+      break;
+    }
+    case 'newchat':
+      if (!S.authenticated) { S.authMode = 'register'; S.modal = 'auth'; }
+      else S.modal = 'newchat';
+      break;
+    case 'back': S.open = false; break;
+    case 'filter': S.filter = id; break;
+    case 'send': send(); return;
+    case 'cancel': S.edit = 0; S.draft = ''; break;
+    case 'react': if (c) { const x = c.msgs.find(y => String(y.id) === id); if (x) x.re = !x.re; } break;
+    case 'edit': if (c) { const x = c.msgs.find(y => String(y.id) === id); if (x) { S.edit = x.id; S.draft = x.text; } } break;
+    case 'del':
+      if (!c || !S.authenticated) return;
+      runApi(async () => { await apiRequest(`/chats/${encodeURIComponent(c.id)}/messages/${encodeURIComponent(id)}`, { method: 'DELETE' }); c.msgs = c.msgs.filter(y => String(y.id) !== id); render(); });
+      return;
+    case 'menu': if (c) S.menu = !S.menu; break;
+    case 'report': if (c) { S.menu = false; S.modal = 'report'; S.reason = ''; } break;
+    case 'reason': S.reason = id; break;
+    case 'sendrep':
+      if (!S.reason) { toast('Выберите причину жалобы'); return; }
+      if (!S.authenticated || !c) { S.authMode = 'login'; S.modal = 'auth'; break; }
+      runApi(async () => {
+        await apiRequest('/reports', { method: 'POST', body: { chatId: c.id, reason: S.reason, messages: c.msgs.slice(-5).map(x => ({ id: x.id, text: CtrlLive.enabled?CtrlFiles.summary(x.text):x.text })) } });
+        S.modal = ''; render(); toast('Жалоба отправлена.');
+      });
+      return;
+    case 'block':
+      if (!c || !S.authenticated) return;
+      runApi(async () => { await apiRequest(`/users/${encodeURIComponent(c.id)}/block`, { method: c.blocked ? 'DELETE' : 'POST' }); c.blocked = !c.blocked; S.menu = false; render(); });
+      return;
+    case 'unblock': {
+      const target = chats.find(x => x.id === id);
+      if (target) runApi(async () => { await apiRequest(`/users/${encodeURIComponent(id)}/block`, { method: 'DELETE' }); target.blocked = false; render(); });
+      return;
+    }
+    case 'unblockall':
+      runApi(async () => { await apiRequest('/users/blocked', { method: 'DELETE' }); chats.forEach(x => { x.blocked = false; }); render(); });
+      return;
+    case 'setcat': S.setCat = id; break;
+    case 'askkill': S.pendingKill = id; S.modal = 'kill'; break;
+    case 'close': S.modal = ''; S.pendingKill = ''; break;
+    case 'askdel': S.modal = 'del'; break;
+    case 'dodel':
+      if (!S.authenticated) { S.authMode = 'login'; S.modal = 'auth'; break; }
+      runApi(async () => { await apiRequest('/me', { method: 'DELETE' }); S.authenticated = false; S.email = ''; S.handle = ''; S.modal = ''; chats.splice(0); render(); toast('Аккаунт удалён.'); });
+      return;
+    case 'like':
+      if (!S.authenticated) { S.authMode = 'login'; S.modal = 'auth'; break; }
+      runApi(async () => { await apiRequest(`/feed/posts/${encodeURIComponent(id)}/likes`, { method: 'POST' }); const n = Number(id); S.liked.has(n) ? S.liked.delete(n) : S.liked.add(n); render(); });
+      return;
+    case 'play': S.play = !S.play; break;
+    case 'prev':
+    case 'next': if (tracks.length) { S.tr = (S.tr + (a === 'next' ? 1 : tracks.length - 1)) % tracks.length; S.pos = 0; } break;
+    case 'track': if (tracks.length) { S.tr = Number(id); S.pos = 0; S.play = true; } break;
+    case 'upload': toast('Загрузка станет доступна после подключения хранилища и серверного API.'); return;
+    case 'pickImage': {
+      const input = document.getElementById(`upload-${id}`);
+      if (!input) { toast('Поле загрузки изображения не найдено.'); return; }
+      if (id==='chatBanner' && !S.previewMode && !S.premium) { toast('Загрузка собственных баннеров доступна только с Premium.'); return; }
+      input.click();
+      return;
+    }
+    case 'clearImage':
+      if (id === 'theme') S.customThemeColor = '';
+      else if (['profileAvatar', 'profileBackground', 'profileBanner', 'chatBanner'].includes(id)) S[id] = '';
+      else return;
+      applyAppearance();
+      savePreferences();
+      render();
+      return;
+    case 'toggleTheme':
+      S.colorMode = S.colorMode === 'dark' ? 'light' : 'dark';
+      applyAppearance();
+      savePreferences();
+      break;
+    case 'cloudPassword':
+      if (!S.authenticated) { S.authMode = 'login'; S.modal = 'auth'; }
+      else S.modal = 'cloudPassword';
+      break;
+    case 'walletRefresh':
+      if (!S.authenticated && !S.previewMode) { S.authMode = 'login'; S.modal = 'auth'; break; }
+      if (S.previewMode) { runApi(loadExchangeRates); return; }
+      runApi(async () => { await Promise.all([loadWallet(), loadExchangeRates()]); }); return;
+    case 'walletDeposit':
+    case 'walletTransfer':
+      if (!S.authenticated && !S.previewMode) { S.authMode = 'login'; S.modal = 'auth'; }
+      else S.modal = a;
+      break;
+    case 'saveProfile':
+      if (!S.authenticated) { S.authMode = 'login'; S.modal = 'auth'; break; }
+      runApi(async () => {
+        const result = await apiRequest('/me', { method: 'PATCH', body: { handle: S.handle, bio: S.bio } });
+        if (result.user) applyProfile(result.user);
+        render(); toast('Профиль сохранён.');
+      });
+      return;
+    case 'prem':
+      if (!S.authenticated) { S.authMode = 'login'; S.modal = 'auth'; break; }
+      runApi(async () => { await apiRequest('/me/premium/checkout', { method: 'POST' }); toast('Запрос на оформление Premium передан серверу.'); });
+      return;
+    case 'buyGift': {
+      const selectedGift = giftDefinitions.find(gift => gift.id === id);
+      if (!selectedGift) { toast('Не удалось определить подарок.'); return; }
+      if (S.previewMode) {
+        if (S.demoClicks < selectedGift.price) { toast('Недостаточно тестовых Кликов.'); return; }
+        S.demoClicks -= selectedGift.price;
+        S.giftsOwned[selectedGift.id]++;
+        render();
+        toast(`Демо-покупка: списано ${selectedGift.price} тестовых Кликов.`);
+        return;
+      }
+      if (!S.authenticated) { S.authMode = 'login'; S.modal = 'auth'; break; }
+      if (!S.giftsLoaded || S.clicks === null) { toast('Сначала загрузите баланс Кликов.'); return; }
+      if (S.clicks < selectedGift.price) { toast('Недостаточно Кликов для покупки подарка.'); return; }
+      if (S.giftPurchasePending) return;
+      if (!S.giftOperationIds[selectedGift.id]) {
+        if (!window.crypto?.randomUUID) { toast('Браузер не поддерживает безопасные идентификаторы операций.'); return; }
+        S.giftOperationIds[selectedGift.id] = window.crypto.randomUUID();
+      }
+      S.giftPurchasePending = true;
+      render();
+      runApi(async () => {
+        try {
+          const result = await apiRequest('/gifts/purchase', {
+            method: 'POST',
+            body: { giftId: selectedGift.id, operationId: S.giftOperationIds[selectedGift.id] }
+          });
+          const balance = Number(result.clicksBalance);
+          const owned = Number(result.owned);
+          if (result.giftId !== selectedGift.id || !Number.isSafeInteger(balance) || !Number.isSafeInteger(owned)) {
+            throw new Error('Сервер вернул некорректный результат покупки.');
+          }
+          S.clicks = balance;
+          S.giftsOwned[selectedGift.id] = owned;
+          S.giftsLoaded = true;
+          delete S.giftOperationIds[selectedGift.id];
+          toast(`Подарок куплен за ${selectedGift.price} Кликов.`);
+        } finally {
+          S.giftPurchasePending = false;
+          render();
+        }
+      });
+      return;
+    }
+    case 'opt': {
+      const accountOption = ['last', 'rec', 'hw', 'ntf', 'pre', 'grp', 'mkt', 'auto', 'bal'].includes(id);
+      if (accountOption && !S.authenticated) { S.authMode = 'login'; S.modal = 'auth'; break; }
+      const value = !S.opt[id];
+      S.opt[id] = value;
+      if (accountOption) runApi(() => apiRequest('/me/settings', { method: 'PATCH', body: { key: id, value } }));
+      break;
+    }
+    case 'resetui':
+      S.fontSize = 'md'; S.opt.compact = false; S.opt.enterSend = true; S.sound = true;
+      S.colorMode = 'dark'; S.customThemeColor = ''; S.language = 'ru';
+      applyAppearance(); savePreferences(); renderNavigation();
+      toast('Локальные настройки интерфейса сброшены');
+      break;
+    case 'kill': {
+      const session = sessions.find(x => x.id === id);
+      if (!session) return;
+      runApi(async () => { await apiRequest(`/me/sessions/${encodeURIComponent(id)}`, { method: 'DELETE' }); sessions = sessions.filter(x => x.id !== id); S.modal = ''; S.pendingKill = ''; render(); });
+      return;
+    }
+    case 'clr':
+      if (S.cacheMb === null) return;
+      S.cacheMb = 0; toast('Локальный кэш очищен'); break;
+    case 'buyclk':
+      if (!S.authenticated && !S.previewMode) { S.authMode = 'login'; S.modal = 'auth'; }
+      else S.modal = 'buy';
+      break;
+    case 'support': window.location.href = 'mailto:support@ctrl-messenger.com'; return;
+    case 'logo': tick(); return;
+    case 'mk': S.mk = id; render(); loadTabData('market'); return;
+    case 'mf': S.mf = id; break;
+    case 'bid':
+    case 'mbuy': {
+      const item = items[Number(id)];
+      if (!item || !S.authenticated) { S.authMode = 'login'; S.modal = 'auth'; break; }
+      runApi(async () => {
+        await apiRequest(`/market/items/${encodeURIComponent(item.id)}/${a === 'bid' ? 'bids' : 'purchase'}`, { method: 'POST', body: a === 'bid' ? { amount: Math.ceil(item.p * 1.05) } : {} });
+        await Promise.all([loadTabData('market'), loadWallet()]);
+      });
+      return;
+    }
+    case 'snd': S.sound = !S.sound; break;
+    case 'bal': S.showBal = !S.showBal; break;
+    default: return;
+  }
+  render();
+}
+function init() {
+  const app = document.getElementById('app');
+  app.innerHTML = `<header class="top"><span class="logo"><button class="key lg-k" data-a="logo" aria-label="Ctrl: нажмите, чтобы услышать щелчок">Ctrl</button></span></header><nav class="rail" aria-label="Навигация"></nav><main id="main"></main><div id="modal"></div><div id="toast" role="status"></div>`;
+  applyAppearance();
+  renderNavigation();
+  document.addEventListener('click', e => {
+    const t = e.target;
+    const el = t.closest('[data-a]');
+    if (!el) {
+      if (S.menu) { S.menu = false; render(); }
+      return;
+    }
+    if (t.closest('[data-stop]') && !el.closest('[data-stop]')) return;
+    if (el.dataset.a === 'logo') tick();
+    act(el.dataset.a ?? '', el.dataset);
+  });
+  document.addEventListener('submit', e => {
+    if (e.target.matches('form[data-form]')) {
+      e.preventDefault();
+      submitForm(e.target);
+    }
+  });
+  document.addEventListener('change', e => {
+    const t = e.target;
+    if (t.dataset.a === 'seen') {
+      S.seenMode = t.value;
+      toast('Настройка визита обновлена');
+      render();
+      if (S.authenticated) runApi(() => apiRequest('/me/settings', { method: 'PATCH', body: { key: 'seenMode', value: S.seenMode } }));
+    } else if (t.dataset.a === 'fsize') {
+      S.fontSize = t.value;
+      toast('Размер текста изменён');
+      render();
+      if (S.authenticated) runApi(() => apiRequest('/me/settings', { method: 'PATCH', body: { key: 'fontSize', value: S.fontSize } }));
+    } else if (t.dataset.a === 'language') {
+      S.language = t.value === 'en' ? 'en' : 'ru';
+      savePreferences();
+      renderNavigation();
+      render();
+    } else if (t.dataset.upload) {
+      handleImageUpload(t);
+    }
+  });
+  document.addEventListener('input', e => {
+    const t = e.target;
+    if (t.id === 'inp') S.draft = t.value;
+    else if (t.id === 'q') {
+      S.q = t.value;
+      const l = document.getElementById('list');
+      if (l) l.innerHTML = listHtml();
+    } else if (t.id === 'ssrc') {
+      S.setQ = t.value;
+      render();
+    } else if (t.id === 's-handle') {
+      const v = t.value.trim();
+      S.handle = v ? (v.startsWith('@') ? v : '@' + v) : '';
+    } else if (t.id === 's-email') {
+      S.email = t.value;
+    } else if (t.id === 'bio') {
+      S.bio = t.value;
+      const b = document.getElementById('bc');
+      if (b) b.textContent = `${t.value.length}/100`;
+    }
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && e.target.id === 'inp' && S.opt.enterSend && !e.shiftKey) {
+      e.preventDefault();
+      send();
+    }
+    if (e.key === 'Escape') {
+      S.modal = ''; S.menu = false; S.pendingKill = '';
+      render();
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+      e.preventDefault();
+      if (S.tab === 'set') {
+        document.getElementById('ssrc')?.focus();
+      } else {
+        S.tab = 'chats'; S.open = false;
+        render();
+        document.getElementById('q')?.focus();
+      }
+    }
+  });
+  window.setInterval(() => {
+    if (CtrlLive.enabled)return;
+    if (!tracks.length) { S.play = false; return; }
+    if (!S.play || S.tab !== 'music') {
+      if (S.play) S.pos = Math.min(S.pos + 1, tracks[S.tr].d);
+      return;
+    }
+    const d = tracks[S.tr].d;
+    S.pos++;
+    if (S.pos >= d) {
+      S.tr = (S.tr + 1) % tracks.length; S.pos = 0;
+      render();
+      return;
+    }
+    const f = document.getElementById('pfill'), p = document.getElementById('ppos');
+    if (f) f.style.width = `${(S.pos / d) * 100}%`;
+    if (p) p.textContent = mmss(S.pos);
+  }, 1000);
+  render();
+}
+init();if(CtrlLive.enabled)CtrlLive.start();</script></body></html>

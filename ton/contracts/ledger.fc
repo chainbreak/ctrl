@@ -1,0 +1,44 @@
+;; One immutable deployment per catalogue. Numbers are sparse SHA256 indices;
+;; gifts use sequential indices. Only the official TAP wallet can credit buyers.
+(slice, slice, int, int, int, int, cell, cell, cell, cell, cell) state() inline {
+  slice s = get_data().begin_parse();
+  var (admin, master, gifts, price, count, nonce) =
+    (s~load_msg_addr(), s~load_msg_addr(), s~load_uint(1), s~load_coins(), s~load_uint(64), s~load_uint(64));
+  var (codes, meta, ledger) = (s~load_ref(), s~load_ref(), s~load_ref());
+  slice l = ledger.begin_parse();
+  return (admin, master, gifts, price, count, nonce, codes, meta, l~load_dict(), l~load_dict(), l~load_dict());
+}
+
+() save(slice admin, slice master, int gifts, int price, int count, int nonce,
+        cell codes, cell meta, cell balances, cell issued, cell pending) impure inline {
+  cell ledger = begin_cell().store_dict(balances).store_dict(issued).store_dict(pending).end_cell();
+  set_data(begin_cell().store_slice(admin).store_slice(master).store_uint(gifts, 1).store_coins(price)
+    .store_uint(count, 64).store_uint(nonce, 64).store_ref(codes).store_ref(meta).store_ref(ledger).end_cell());
+}
+
+int balance(cell balances, slice account) inline {
+  (slice value, int ok) = balances.udict_get?(256, slice_hash(account));
+  if (ok) { return value~load_coins(); }
+  return 0;
+}
+
+cell adjust(cell balances, slice account, int delta) inline {
+  int value = balance(balances, account) + delta;
+  throw_unless(420, value >= 0);
+  if (value == 0) { balances~udict_delete?(256, slice_hash(account)); return balances; }
+  return balances.udict_set_builder(256, slice_hash(account), begin_cell().store_coins(value));
+}
+
+cell item_init(int index, cell codes) inline {
+  cell data = begin_cell().store_uint(index, 256).store_slice(my_address()).end_cell();
+  return begin_cell().store_uint(0, 2).store_dict(codes.begin_parse().preload_ref())
+    .store_dict(data).store_uint(0, 1).end_cell();
+}
+
+() deliver(int index, cell codes, cell body) impure inline {
+  cell init = item_init(index, codes);
+  slice dest = calculate_jetton_wallet_address(init);
+  send_raw_message(begin_cell().store_uint(0x18, 6).store_slice(dest).store_coins(80000000)
+    .store_uint(7, 108).store_ref(init).store_ref(body).end_cell(), 1);
+}
+

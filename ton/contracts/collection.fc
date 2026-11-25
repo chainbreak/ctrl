@@ -1,0 +1,129 @@
+int number_index(slice number, int staff) inline {
+  throw_unless(421, (slice_bits(number) == 96) & (slice_refs(number) == 0));
+  int index = string_hash(number);
+  int prefix = number~load_uint(32);
+  throw_unless(422, (prefix == 0x2b333333) | ((prefix == 0x2b393939) & staff));
+  repeat (8) { int d = number~load_uint(8); throw_unless(423, (d >= 48) & (d <= 57)); }
+  return index;
+}
+
+() recv_internal(int msg_value, cell full, slice body) impure {
+  if (body.slice_empty?()) { return (); }
+  slice header = full.begin_parse();
+  int flags = header~load_uint(4);
+  slice sender = header~load_msg_addr();
+  var (admin, master, gifts, price, count, nonce, codes, meta, balances, issued, pending) = state();
+  slice cs = codes.begin_parse(); cs~load_ref();
+  cell wallet_code = cs~load_ref();
+  slice vault = calculate_user_jetton_wallet_address(my_address(), master, wallet_code);
+  ;; Outgoing withdrawal bounced at the collection's TAP wallet: restore credit once.
+  if (flags & 1) {
+    if ((slice_bits(body) < 128) | (~ equal_slices(sender, vault))) { return (); }
+    body~skip_bits(32);
+    if (body~load_uint(32) != 0x0f8a7ea5) { return (); }
+    int id = body~load_uint(64);
+    (slice record, int ok) = pending.udict_get?(64, id);
+    if (ok) {
+      slice user = record~load_msg_addr(); int amount = record~load_coins();
+      balances = adjust(balances, user, amount);
+      pending~udict_delete?(64, id);
+      save(admin, master, gifts, price, count, nonce, codes, meta, balances, issued, pending);
+    }
+    return ();
+  }
+  int op = body~load_uint(32);
+  int query = body~load_uint(64);
+  if (op == 0x7362d09c) {
+    throw_unless(401, equal_slices(sender, vault));
+    int amount = body~load_coins();
+    slice buyer = body~load_msg_addr(); force_chain(buyer);
+    balances = adjust(balances, buyer, amount);
+  } elseif (op == 0x43545201) {
+    ;; Buyer pays the network fee separately. A failed purchase leaves all TAP credit intact.
+    throw_unless(424, msg_value >= 120000000);
+    force_chain(sender);
+    int index = count;
+    cell content = meta.begin_parse().preload_ref(); ;; overridden for gifts below
+    if (gifts) {
+      slice m = meta.begin_parse(); m~load_ref(); content = m~load_ref();
+      body.end_parse();
+    } else {
+      index = number_index(body, equal_slices(sender, admin));
+      cell name = begin_cell().store_uint(0, 8).store_slice(body).end_cell();
+      cell fields = new_dict().udict_set_ref(256, "name"H, name);
+      content = begin_cell().store_uint(0, 8).store_dict(fields).end_cell();
+    }
+    (cell previous, int exists) = issued.udict_get_ref?(256, index);
+    throw_if(425, exists);
+    balances = adjust(balances, sender, 0 - price);
+    balances = adjust(balances, admin, price);
+    cell birth = begin_cell().store_slice(sender).store_ref(content).end_cell();
+    issued~udict_set_ref(256, index, birth);
+    count += 1;
+    deliver(index, codes, birth);
+  } elseif (op == 0x43545202) {
+    ;; Idempotent recovery of a downstream initialization failure. The item accepts
+    ;; its original initialization only once, even after resale.
+    throw_unless(424, msg_value >= 120000000);
+    int index = body~load_uint(256);
+    (cell birth, int exists) = issued.udict_get_ref?(256, index);
+    throw_unless(426, exists); deliver(index, codes, birth);
+  } elseif (op == 0x43545203) {
+    throw_unless(424, msg_value >= 150000000);
+    int amount = body~load_coins(); throw_unless(427, amount > 0);
+    balances = adjust(balances, sender, 0 - amount);
+    nonce += 1;
+    pending = pending.udict_set_builder(64, nonce, begin_cell().store_slice(sender).store_coins(amount));
+    cell transfer = begin_cell().store_uint(0x0f8a7ea5, 32).store_uint(nonce, 64)
+      .store_coins(amount).store_slice(sender).store_slice(my_address()).store_uint(0, 1)
+      .store_coins(0).store_uint(0, 1).store_uint(0x43545205,32).end_cell();
+    send_raw_message(begin_cell().store_uint(0x18, 6).store_slice(vault).store_coins(110000000)
+      .store_uint(1, 107).store_ref(transfer).end_cell(), 1);
+  } elseif (op == 0x43545204) {
+    throw_unless(401, equal_slices(sender, vault));
+    (slice record, int exists) = pending.udict_get?(64, query);
+    if (~ exists) { return (); }
+    slice user = record~load_msg_addr(); int amount = record~load_coins();
+    throw_unless(427, body~load_coins() == amount);
+    balances = adjust(balances, user, amount);
+    pending~udict_delete?(64, query);
+  } elseif (op == 0xd53276db) { return ();
+  } elseif (op == 0x43545205) {
+    (slice record, int exists) = pending.udict_get?(64, query);
+    if (~ exists) { return (); }
+    slice user = record~load_msg_addr();
+    if (~ equal_slices(sender, calculate_user_jetton_wallet_address(user, master, wallet_code))) { return (); }
+    pending~udict_delete?(64, query);
+  } else { throw(0xffff); }
+  save(admin, master, gifts, price, count, nonce, codes, meta, balances, issued, pending);
+}
+
+(int, cell, slice) get_collection_data() method_id {
+  var (admin, _, gifts, _, count, _, _, meta, _, _, _) = state();
+  return (gifts ? count : -1, meta.begin_parse().preload_ref(), admin);
+}
+slice get_nft_address_by_index(int index) method_id {
+  var (_, _, _, _, _, _, codes, _, _, _, _) = state();
+  return calculate_jetton_wallet_address(item_init(index, codes));
+}
+cell get_nft_content(int index, cell individual) method_id { return individual; }
+int get_credit(slice owner) method_id {
+  var (_, _, _, _, _, _, _, _, balances, _, _) = state(); return balance(balances, owner);
+}
+(int, cell) dnsresolve(slice domain, int category) method_id {
+  var (_, _, gifts, _, _, _, codes, _, _, issued, _) = state();
+  if (gifts | (slice_bits(domain) < 8)) { return (0, null()); }
+  if ((slice_bits(domain) == 8) & (domain.preload_uint(8) == 0)) { return (8, null()); }
+  if (slice_bits(domain) < 96) { return (0, null()); }
+  int used = 0;
+  if (domain.preload_uint(8) == 0) { domain~skip_bits(8); used = 8; }
+  if (slice_bits(domain) < 96) { return (0, null()); }
+  slice label = domain~load_bits(88); ;; prefix and eight digits, without '+'
+  if (domain.preload_uint(8) != 0) { return (0, null()); }
+  int index = string_hash(begin_cell().store_uint(43, 8).store_slice(label).end_cell().begin_parse());
+  (_, int found) = issued.udict_get_ref?(256, index);
+  if (~ found) { return (0, null()); }
+  cell next = begin_cell().store_uint(0xba93,16).store_slice(calculate_jetton_wallet_address(item_init(index,codes))).end_cell();
+  return (used + 88, next);
+}
+

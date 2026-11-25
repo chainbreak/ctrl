@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="ru"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark"><title>Ctrl · Вход по номеру</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#080808;color:#f7f7f7;font:16px/1.45 "Segoe UI",system-ui,sans-serif;min-height:100svh;display:grid;place-items:center}main{width:min(100% - 48px,350px);padding:32px 0}
+.brand{display:inline-block;border:1px solid #555;border-bottom:3px solid #424242;border-radius:9px;padding:4px 12px 7px;font-weight:600;font-size:19px;letter-spacing:-1px}
+h1{font-size:32px;font-weight:600;letter-spacing:-1px;margin:32px 0 22px}label{font-size:14px;color:#bebebe}input,button{display:block;width:100%;font:inherit;border-radius:10px;padding:12px 14px}input{margin:7px 0 14px;border:1px solid #464646;background:#171717;color:#fff}button{border:0;background:#eee;color:#111;cursor:pointer;font-weight:600}button:disabled{opacity:.55;cursor:wait}:focus-visible{outline:2px solid white;outline-offset:3px}p{color:#bbb;font-size:14px;min-height:21px}button[hidden],form[hidden]{display:none}
+</style>
+<main><span class="brand">Ctrl</span><h1>Вход по номеру</h1>
+<form><label for="number">Ваш NFT-номер</label><input id="number" placeholder="+33300001234" autocomplete="off" type="tel" pattern="[+](333|999)[0-9]{8}" maxlength="12" required>
+<button>Подключить кошелёк</button></form><p role="status" aria-live="polite"></p><button hidden id="logout">Выйти</button></main>
+<script src="/tonconnect.js" defer></script><script src="/login.js" defer></script></html>
+

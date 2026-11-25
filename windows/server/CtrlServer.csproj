@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.22" />
+  </ItemGroup>
+
+<PropertyGroup><Version>0.1.2</Version><AssemblyName>ctrl-server</AssemblyName></PropertyGroup><ItemGroup>
+  
+  
+  
+  
+  <EmbeddedResource Condition="!$([System.String]::Copy('$(RuntimeIdentifier)').StartsWith('linux'))" Include="../staging/ton-runtime.zip" LogicalName="Ctrl.TonRuntime" />
+</ItemGroup>
+<ItemGroup><EmbeddedResource Include="../staging/interface.zip" LogicalName="Ctrl.Site" /></ItemGroup></Project>

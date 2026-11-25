@@ -1,0 +1,10 @@
+(int, cell) dnsresolve(slice domain, int category) method_id {
+  if ((slice_bits(domain) != 8) | (slice_refs(domain) != 0)) { return (0, null()); }
+  if (domain.preload_uint(8) != 0) { return (0, null()); }
+  (int ready, _, _, slice owner, _) = load_data();
+  if (~ ready) { return (8, null()); }
+  cell record = begin_cell().store_uint(0x9fd3, 16).store_slice(owner).store_uint(0, 8).end_cell();
+  if (category == 0) { return (8, new_dict().udict_set_ref(256, "wallet"H, record)); }
+  return (8, category == "wallet"H ? record : null());
+}
+

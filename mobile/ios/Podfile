@@ -1,0 +1,7 @@
+platform :ios, '16.0'
+project 'Ctrl.xcodeproj'
+target 'Ctrl' do
+  use_frameworks!
+  pod 'SQLCipher', '~> 4.6'
+end
+
